@@ -649,14 +649,12 @@ class DataframeType(BaseType):
     def is_unique_set(self, other_value):
         target = self.replace_prefix(other_value.get("target"))
         value = other_value.get("comparator")
-        print(value)
         if isinstance(value, list):
             value.append(target)
             target_data = value
         else:
             target_data = [value, target]
         target_data = self.replace_all_prefixes(target_data)
-        print(target_data)
         counts = self.value[target_data].groupby(target_data)[target].transform('size')
         results = np.where(counts <= 1, True, False)
         self.value[f"result_{uuid4()}"] = results
