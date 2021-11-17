@@ -759,7 +759,6 @@ class DataframeType(BaseType):
         target = self.replace_prefix(other_value.get("target"))
         value_column = self.replace_prefix(other_value.get("comparator"))
         results = self.value.apply(lambda row: self.detect_reference(row, value_column, target), axis=1)
-        print(results)
         self.value[f"result_{uuid4()}"] = results
         return not(False in results.values)
 
