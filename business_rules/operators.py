@@ -747,8 +747,7 @@ class DataframeType(BaseType):
         if isinstance(value, list):
             raise Exception('Comparator must be a single String value')
             
-        a = self.value.groupby(value).agg(lambda x : list(x))[target].map(lambda x: sorted(x) == x).tolist() 
-        return not (False in a)
+        return not (False in self.value.groupby(value).agg(lambda x : list(x))[target].map(lambda x: sorted(x) == x).tolist())
        
     @type_operator(FIELD_DATAFRAME)
     def is_not_ordered_set(self, other_value):
@@ -757,9 +756,8 @@ class DataframeType(BaseType):
         if isinstance(value, list):
             raise Exception('Comparator must be a single String value')
             
-        a = self.value.groupby(value).agg(lambda x : list(x))[target].map(lambda x: sorted(x) == x).tolist() 
-        return False in a
-       
+        return False in self.value.groupby(value).agg(lambda x : list(x))[target].map(lambda x: sorted(x) == x).tolist() 
+        
     @type_operator(FIELD_DATAFRAME)
     def is_valid_reference(self, other_value):
         target = self.replace_prefix(other_value.get("target"))
