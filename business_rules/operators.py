@@ -293,8 +293,8 @@ class DataframeType(BaseType):
             values[i] = self.replace_prefix(values[i])
         return values
     
-    def get_comparator_data(self, comparator, use_explicit_value: bool = False):
-        if use_explicit_value:
+    def get_comparator_data(self, comparator, value_is_literal: bool = False):
+        if value_is_literal:
             return comparator
         else:
             return self.value.get(comparator, comparator)
@@ -311,18 +311,18 @@ class DataframeType(BaseType):
     @type_operator(FIELD_DATAFRAME)
     def equal_to(self, other_value):
         target = self.replace_prefix(other_value.get("target"))
-        use_explicit_value = other_value.get("use_explicit_value", False)
-        comparator = self.replace_prefix(other_value.get("comparator")) if not use_explicit_value else other_value.get("comparator")
-        comparison_data = self.get_comparator_data(comparator, use_explicit_value)
+        value_is_literal = other_value.get("value_is_literal", False)
+        comparator = self.replace_prefix(other_value.get("comparator")) if not value_is_literal else other_value.get("comparator")
+        comparison_data = self.get_comparator_data(comparator, value_is_literal)
         results = np.where(self.value.get(target) == comparison_data, True, False)
         return pd.Series(results)
 
     @type_operator(FIELD_DATAFRAME)
     def equal_to_case_insensitive(self, other_value):
         target = self.replace_prefix(other_value.get("target"))
-        use_explicit_value = other_value.get("use_explicit_value", False)
-        comparator = self.replace_prefix(other_value.get("comparator")) if not use_explicit_value else other_value.get("comparator")
-        comparison_data = self.get_comparator_data(comparator, use_explicit_value)
+        value_is_literal = other_value.get("value_is_literal", False)
+        comparator = self.replace_prefix(other_value.get("comparator")) if not value_is_literal else other_value.get("comparator")
+        comparison_data = self.get_comparator_data(comparator, value_is_literal)
         comparison_data = self.convert_string_data_to_lower(comparison_data)
         results = np.where(self.value.get(target).str.lower() == comparison_data, True, False)
         return pd.Series(results)
@@ -346,27 +346,27 @@ class DataframeType(BaseType):
     @type_operator(FIELD_DATAFRAME)
     def greater_than_or_equal_to(self, other_value):
         target = self.replace_prefix(other_value.get("target"))
-        use_explicit_value = other_value.get("use_explicit_value", False)
-        comparator = self.replace_prefix(other_value.get("comparator")) if not use_explicit_value else other_value.get("comparator")
-        comparison_data = self.get_comparator_data(comparator, use_explicit_value)
+        value_is_literal = other_value.get("value_is_literal", False)
+        comparator = self.replace_prefix(other_value.get("comparator")) if not value_is_literal else other_value.get("comparator")
+        comparison_data = self.get_comparator_data(comparator, value_is_literal)
         results = np.where(self.value.get(target) >= comparison_data, True, False)
         return pd.Series(results)
     
     @type_operator(FIELD_DATAFRAME)
     def greater_than(self, other_value):
         target = self.replace_prefix(other_value.get("target"))
-        use_explicit_value = other_value.get("use_explicit_value", False)
-        comparator = self.replace_prefix(other_value.get("comparator")) if not use_explicit_value else other_value.get("comparator")
-        comparison_data = self.get_comparator_data(comparator, use_explicit_value)
+        value_is_literal = other_value.get("value_is_literal", False)
+        comparator = self.replace_prefix(other_value.get("comparator")) if not value_is_literal else other_value.get("comparator")
+        comparison_data = self.get_comparator_data(comparator, value_is_literal)
         results = np.where(self.value.get(target) > comparison_data, True, False)
         return pd.Series(results)
     
     @type_operator(FIELD_DATAFRAME)
     def contains(self, other_value):
         target = self.replace_prefix(other_value.get("target"))
-        use_explicit_value = other_value.get("use_explicit_value", False)
-        comparator = self.replace_prefix(other_value.get("comparator")) if not use_explicit_value else other_value.get("comparator")
-        comparison_data = self.get_comparator_data(comparator, use_explicit_value)
+        value_is_literal = other_value.get("value_is_literal", False)
+        comparator = self.replace_prefix(other_value.get("comparator")) if not value_is_literal else other_value.get("comparator")
+        comparison_data = self.get_comparator_data(comparator, value_is_literal)
         if isinstance(comparator, pandas.core.series.Series):
             results = np.where(comparison_data.isin(self.value[target]), True, False)
         else:
@@ -380,9 +380,9 @@ class DataframeType(BaseType):
     @type_operator(FIELD_DATAFRAME)
     def contains_case_insensitive(self, other_value):
         target = self.replace_prefix(other_value.get("target"))
-        use_explicit_value = other_value.get("use_explicit_value", False)
-        comparator = self.replace_prefix(other_value.get("comparator")) if not use_explicit_value else other_value.get("comparator")
-        comparison_data = self.get_comparator_data(comparator, use_explicit_value)
+        value_is_literal = other_value.get("value_is_literal", False)
+        comparator = self.replace_prefix(other_value.get("comparator")) if not value_is_literal else other_value.get("comparator")
+        comparison_data = self.get_comparator_data(comparator, value_is_literal)
         comparison_data = self.convert_string_data_to_lower(comparison_data)
         if isinstance(comparator, pandas.core.series.Series):
             results = np.where(comparison_data.isin(self.value[target].str.lower()), True, False)
@@ -397,12 +397,12 @@ class DataframeType(BaseType):
     @type_operator(FIELD_DATAFRAME)
     def is_contained_by(self, other_value):
         target = self.replace_prefix(other_value.get("target"))
-        use_explicit_value = other_value.get("use_explicit_value", False)
+        value_is_literal = other_value.get("value_is_literal", False)
         comparator = other_value.get("comparator")
-        if isinstance(comparator, str) and not use_explicit_value:
+        if isinstance(comparator, str) and not value_is_literal:
             # column name provided
             comparator = self.replace_prefix(comparator)
-        comparison_data = self.get_comparator_data(comparator, use_explicit_value)
+        comparison_data = self.get_comparator_data(comparator, value_is_literal)
         results = self.value[target].isin(comparison_data)
         return pd.Series(results)
     
@@ -414,13 +414,13 @@ class DataframeType(BaseType):
     def is_contained_by_case_insensitive(self, other_value):
         target = self.replace_prefix(other_value.get("target"))
         comparator = other_value.get("comparator", [])
-        use_explicit_value = other_value.get("use_explicit_value", False)
+        value_is_literal = other_value.get("value_is_literal", False)
         if isinstance(comparator, list):
             comparator = [val.lower() for val in comparator]
-        elif isinstance(comparator, str) and not use_explicit_value:
+        elif isinstance(comparator, str) and not value_is_literal:
             # column name provided
             comparator = self.replace_prefix(comparator)
-        comparison_data = self.get_comparator_data(comparator, use_explicit_value)
+        comparison_data = self.get_comparator_data(comparator, value_is_literal)
         if isinstance(comparison_data, pd.core.series.Series):
             comparison_data = comparison_data.str.lower()
         results = self.value[target].str.lower().isin(comparison_data)
