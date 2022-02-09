@@ -267,6 +267,8 @@ class DataframeType(BaseType):
         self.column_prefix_map = data.get("column_prefix_map", {})
         self.relationship_data = data.get("relationship_data", {})
         self.value_level_metadata = data.get("value_level_metadata", [])
+        self.column_codelist_map = data.get("column_codelist_map", {})
+        self.codelist_term_map = data.get("codelist_term_map", {})
 
     def _assert_valid_value_and_cast(self, value):
         if not hasattr(value, '__iter__'):
@@ -807,6 +809,28 @@ class DataframeType(BaseType):
     def additional_columns_not_empty(self, other_value: dict):
         return ~self.additional_columns_empty(other_value)
 
+    @type_operator(FIELD_DATAFRAME)
+    def references_correct_codelist(self, other_value: dict):
+        target: str = self.replace_prefix(other_value.get("target"))
+        comparator = self.replace_prefix(other_value.get("comparator"))
+        result: pd.Series = self.value.apply(lambda row: self.valid_codelist_reference(row[target], row[comparator]), axis=1)
+        return result
+    
+    @type_operator(FIELD_DATAFRAME)
+    def does_not_reference_correct_codelist(self, other_value: dict):
+        return ~self.references_correct_codelist(other_value)
+
+    @type_operator(FIELD_DATAFRAME)
+    def uses_valid_codelist_terms(self, other_value: dict):
+        target: str = self.replace_prefix(other_value.get("target"))
+        comparator = self.replace_prefix(other_value.get("comparator"))
+        result: pd.Series = self.value.apply(lambda row: self.valid_terms(row[target], row[comparator]), axis=1)
+        return result
+
+    @type_operator(FIELD_DATAFRAME)
+    def does_not_use_valid_codelist_terms(self, other_value: dict):
+        return ~self.uses_valid_codelist_terms(other_value)
+
     def next_column_exists_and_previous_is_null(self, row: pd.Series) -> bool:
         row.reset_index(drop=True, inplace=True)
         for index in row[row.isin([[], {}, "", None])].index:  # leaving null values only
@@ -814,6 +838,17 @@ class DataframeType(BaseType):
             if next_position < len(row) and row[next_position] is not None:
                 return True
         return False
+    
+    def valid_codelist_reference(self, column_name, codelist):
+        if column_name in self.column_codelist_map:
+            return codelist in self.column_codelist_map[column_name]
+        return True
+    
+    def valid_terms(self, codelist, terms_list):
+        if codelist in self.codelist_term_map:
+            return self.codelist_term_map[codelist].get("extensible", False) or set(terms_list).issubset(self.codelist_term_map[codelist].get("allowed_terms", []))
+        return False
+
 
     @type_operator(FIELD_DATAFRAME)
     def has_different_values(self, other_value: dict):
