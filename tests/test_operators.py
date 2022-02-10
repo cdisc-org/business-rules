@@ -1662,12 +1662,15 @@ class DataframeOperatorTests(TestCase):
 
         column_codelist_map = {
             "TEST": ["C123", "C456"],
-            "COOLVAR": ["C123", "C456"],
+            "--OLVAR": ["C123", "C456"],
             "ANOTHERVAR": ["C789"]
         }
         dft = DataframeType({
             "value": df,
-            "column_codelist_map": column_codelist_map
+            "column_codelist_map": column_codelist_map,
+            "column_prefix_map": {
+                "--": "CO"
+            }
         })
 
         result = dft.does_not_reference_correct_codelist({"target": "define_variable_name", "comparator": "define_variable_controlled_terms"})

@@ -842,6 +842,12 @@ class DataframeType(BaseType):
     def valid_codelist_reference(self, column_name, codelist):
         if column_name in self.column_codelist_map:
             return codelist in self.column_codelist_map[column_name]
+        elif self.column_prefix_map:
+            # Check for generic versions of variables (i.e --DECOD)
+            for key in self.column_prefix_map:
+                if column_name.startswith(self.column_prefix_map[key]):
+                    generic_column_name = column_name.replace(self.column_prefix_map[key], key, 1)
+                    return codelist in self.column_codelist_map.get(generic_column_name)
         return True
     
     def valid_terms(self, codelist, terms_list):
