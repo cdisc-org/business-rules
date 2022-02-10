@@ -1694,7 +1694,7 @@ class DataframeOperatorTests(TestCase):
             }
         )
 
-        extensible_codelist_term_map = {
+        extensible_codelist_term_map = [{
             "C123": {
                 "extensible": False,
                 "allowed_terms": ["A", "B", "b", "C"],
@@ -1707,9 +1707,9 @@ class DataframeOperatorTests(TestCase):
                 "extensible": False,
                 "allowed_terms": ["E", "F", "b", "C"]
             }
-        }
+        }]
 
-        codelist_term_map = {
+        codelist_term_map = [{
             "C123": {
                 "extensible": False,
                 "allowed_terms": ["A", "B", "b", "C"],
@@ -1722,10 +1722,10 @@ class DataframeOperatorTests(TestCase):
                 "extensible": False,
                 "allowed_terms": ["E", "F", "b", "C"]
             }
-        }
+        }]
         dft = DataframeType({
             "value": df,
-            "codelist_term_map": codelist_term_map
+            "codelist_term_maps": codelist_term_map
         })
 
         result = dft.uses_valid_codelist_terms({"target": "define_variable_controlled_terms", "comparator": "define_variable_allowed_terms"})
@@ -1737,7 +1737,7 @@ class DataframeOperatorTests(TestCase):
         # Test extensible flag
         dft = DataframeType({
             "value": df,
-            "codelist_term_map": extensible_codelist_term_map
+            "codelist_term_maps": extensible_codelist_term_map
         })
         
         result = dft.uses_valid_codelist_terms({"target": "define_variable_controlled_terms", "comparator": "define_variable_invalid_allowed_terms"})
@@ -1761,7 +1761,7 @@ class DataframeOperatorTests(TestCase):
             }
         )
 
-        extensible_codelist_term_map = {
+        extensible_codelist_term_map = [{
             "C123": {
                 "extensible": False,
                 "allowed_terms": ["A", "B", "b", "C"],
@@ -1774,9 +1774,9 @@ class DataframeOperatorTests(TestCase):
                 "extensible": False,
                 "allowed_terms": ["E", "F", "b", "C"]
             }
-        }
+        }]
 
-        codelist_term_map = {
+        codelist_term_map = [{
             "C123": {
                 "extensible": False,
                 "allowed_terms": ["A", "B", "b", "C"],
@@ -1789,10 +1789,10 @@ class DataframeOperatorTests(TestCase):
                 "extensible": False,
                 "allowed_terms": ["E", "F", "b", "C"]
             }
-        }
+        }]
         dft = DataframeType({
             "value": df,
-            "codelist_term_map": codelist_term_map
+            "codelist_term_maps": codelist_term_map
         })
 
         result = dft.does_not_use_valid_codelist_terms({"target": "define_variable_controlled_terms", "comparator": "define_variable_allowed_terms"})
@@ -1804,7 +1804,7 @@ class DataframeOperatorTests(TestCase):
         # Test extensible flag
         dft = DataframeType({
             "value": df,
-            "codelist_term_map": extensible_codelist_term_map
+            "codelist_term_maps": extensible_codelist_term_map
         })
         
         result = dft.does_not_use_valid_codelist_terms({"target": "define_variable_controlled_terms", "comparator": "define_variable_invalid_allowed_terms"})

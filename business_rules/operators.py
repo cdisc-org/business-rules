@@ -268,7 +268,7 @@ class DataframeType(BaseType):
         self.relationship_data = data.get("relationship_data", {})
         self.value_level_metadata = data.get("value_level_metadata", [])
         self.column_codelist_map = data.get("column_codelist_map", {})
-        self.codelist_term_map = data.get("codelist_term_map", {})
+        self.codelist_term_maps = data.get("codelist_term_maps", [])
 
     def _assert_valid_value_and_cast(self, value):
         if not hasattr(value, '__iter__'):
@@ -845,9 +845,11 @@ class DataframeType(BaseType):
         return True
     
     def valid_terms(self, codelist, terms_list):
-        if codelist in self.codelist_term_map:
-            return self.codelist_term_map[codelist].get("extensible", False) or set(terms_list).issubset(self.codelist_term_map[codelist].get("allowed_terms", []))
-        return False
+        valid_term = False
+        for codelist_term_map in self.codelist_term_maps:
+            if codelist in codelist_term_map:
+                valid_term = valid_term or (codelist_term_map[codelist].get("extensible") or set(terms_list).issubset(codelist_term_map[codelist].get("allowed_terms", [])))
+        return valid_term
 
 
     @type_operator(FIELD_DATAFRAME)
