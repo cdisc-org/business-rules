@@ -42,13 +42,17 @@ def check_conditions_recursively(conditions, defined_variables):
     elif keys == ['any']:
         result = False
         assert len(conditions['any']) >= 1
+        missing_variables = []
         for condition in conditions['any']:
             # Always check all conditions in the case that we are operating on a dataframe
             try:
                 check_result = check_conditions_recursively(condition, defined_variables)
                 result = check_result | result
             except KeyError as e:
-                continue
+                missing_variables.append(e.args[0])
+        if len(missing_variables) == len(conditions["any"]):
+            # Raise a key error only if all conditions in an "any" condition result in a KeyError
+            raise KeyError(", ".join(list(set(missing_variables))))
         return result
 
     else:
