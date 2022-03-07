@@ -44,8 +44,11 @@ def check_conditions_recursively(conditions, defined_variables):
         assert len(conditions['any']) >= 1
         for condition in conditions['any']:
             # Always check all conditions in the case that we are operating on a dataframe
-            check_result = check_conditions_recursively(condition, defined_variables)
-            result = check_result | result
+            try:
+                check_result = check_conditions_recursively(condition, defined_variables)
+                result = check_result | result
+            except KeyError as e:
+                continue
         return result
 
     else:

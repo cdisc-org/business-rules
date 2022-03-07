@@ -1,5 +1,5 @@
 from business_rules import engine
-from business_rules.variables import BaseVariables
+from business_rules.variables import BaseVariables, dataframe_rule_variable
 from business_rules.operators import StringType
 from business_rules.actions import BaseActions
 
@@ -191,3 +191,21 @@ class EngineTests(TestCase):
         err_string = "Action fakeone is not defined in class BaseActions"
         with self.assertRaisesRegexp(AssertionError, err_string):
             engine.do_actions(actions, BaseActions())
+
+    def test_any_condition_missing_columns(self):
+        conditions = {'any': [{
+            'name': "get_dataset",
+            "operator": "starts_with",
+            "value": {
+                "target": "invalid",
+                "comparator": "HE"
+            }
+        }]}
+
+        class DatasetVariables(BaseVariables):
+            @dataframe_rule_variable()
+            def get_dataset(): return {"value": {"TEST": "NE"}}
+
+        variables = DatasetVariables()
+        result = engine.check_conditions_recursively(conditions, DatasetVariables)
+        assert result == False
