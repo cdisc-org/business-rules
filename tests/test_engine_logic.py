@@ -214,10 +214,10 @@ class EngineTests(TestCase):
 
         class DatasetVariables(BaseVariables):
             @dataframe_rule_variable()
-            def get_dataset(): return {"value": {"TEST": 2}}
+            def get_dataset(self): return {"value": {"TEST": 2}}
 
         variables = DatasetVariables()
-        result = engine.check_conditions_recursively(conditions, DatasetVariables)
+        result = engine.check_conditions_recursively(conditions, variables)
         assert result[0] == False
 
     def test_any_condition_all_conditions_reference_missing_columns(self):
@@ -242,8 +242,8 @@ class EngineTests(TestCase):
 
         class DatasetVariables(BaseVariables):
             @dataframe_rule_variable()
-            def get_dataset(): return {"value": {"TEST": 2}}
+            def get_dataset(self): return {"value": {"TEST": 2}}
 
         variables = DatasetVariables()
         with self.assertRaisesRegexp(KeyError, "invalid"):
-            result = engine.check_conditions_recursively(conditions, DatasetVariables)
+            result = engine.check_conditions_recursively(conditions, variables)
