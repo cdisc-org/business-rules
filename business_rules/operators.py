@@ -13,7 +13,6 @@ from .fields import (FIELD_DATAFRAME, FIELD_TEXT, FIELD_NUMERIC, FIELD_NO_INPUT,
                      FIELD_SELECT, FIELD_SELECT_MULTIPLE)
 from .utils import fn_name_to_pretty_label, float_to_decimal, vectorized_is_valid, vectorized_date_component, \
     vectorized_is_complete_date, vectorized_len, vectorized_get_dict_key, vectorized_is_in, vectorized_case_insensitive_is_in
-from collections.abc import Iterable
 from decimal import Decimal, Inexact, Context
 import operator
 import numpy as np
@@ -302,8 +301,8 @@ class DataframeType(BaseType):
         else:
             return self.value.get(comparator, comparator)
     
-    def check_column_of_iterables(self, column):
-        return isinstance(column, pandas.core.series.Series) and isinstance(column.iloc[0], Iterable)
+    def is_column_of_iterables(self, column):
+        return isinstance(column, pandas.core.series.Series) and (isinstance(column.iloc[0], list) or  isinstance(column.iloc[0], set))
 
     @type_operator(FIELD_DATAFRAME)
     def exists(self, other_value):
@@ -383,7 +382,7 @@ class DataframeType(BaseType):
         value_is_literal = other_value.get("value_is_literal", False)
         comparator = self.replace_prefix(other_value.get("comparator")) if not value_is_literal else other_value.get("comparator")
         comparison_data = self.get_comparator_data(comparator, value_is_literal)
-        if self.check_column_of_iterables(self.value[target]):
+        if self.is_column_of_iterables(self.value[target]):
             results = vectorized_is_in(comparison_data, self.value[target])
         elif isinstance(comparator, pandas.core.series.Series):
             results = np.where(comparison_data.isin(self.value[target]), True, False)
@@ -402,7 +401,7 @@ class DataframeType(BaseType):
         comparator = self.replace_prefix(other_value.get("comparator")) if not value_is_literal else other_value.get("comparator")
         comparison_data = self.get_comparator_data(comparator, value_is_literal)
         comparison_data = self.convert_string_data_to_lower(comparison_data)
-        if self.check_column_of_iterables(self.value[target]):
+        if self.is_column_of_iterables(self.value[target]):
             results = vectorized_case_insensitive_is_in(comparison_data, self.value[target])
         elif isinstance(comparator, pandas.core.series.Series):
             results = np.where(comparison_data.isin(self.value[target].str.lower()), True, False)
@@ -423,7 +422,7 @@ class DataframeType(BaseType):
             # column name provided
             comparator = self.replace_prefix(comparator)
         comparison_data = self.get_comparator_data(comparator, value_is_literal)
-        if self.check_column_of_iterables(comparison_data):
+        if self.is_column_of_iterables(comparison_data):
             results = vectorized_is_in(self.value[target], comparison_data)
         else:
             results = self.value[target].isin(comparison_data)
@@ -444,11 +443,18 @@ class DataframeType(BaseType):
             # column name provided
             comparator = self.replace_prefix(comparator)
         comparison_data = self.get_comparator_data(comparator, value_is_literal)
-        if self.check_column_of_iterables(comparison_data):
+        if self.is_column_of_iterables(comparison_data):
             results = vectorized_case_insensitive_is_in(self.value[target].str.lower(), comparison_data)
-        else:
+            return pd.Series(results)
+        elif isinstance(comparison_data, pd.core.series.Series):
             results = self.value[target].str.lower().isin(comparison_data.str.lower())
+        else:
+            results = self.value[target].str.lower().isin(comparison_data)
         return pd.Series(results.values)
+
+    @type_operator(FIELD_DATAFRAME)
+    def is_not_contained_by_case_insensitive(self, other_value):
+        return ~self.is_contained_by_case_insensitive(other_value)
     
     @type_operator(FIELD_DATAFRAME)
     def prefix_matches_regex(self, other_value):
