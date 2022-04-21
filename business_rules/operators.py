@@ -909,7 +909,6 @@ class DataframeType(BaseType):
                 valid_term = valid_term or (codelist_term_map[codelist].get("extensible") or set(terms_list).issubset(codelist_term_map[codelist].get("allowed_terms", [])))
         return valid_term
 
-
     @type_operator(FIELD_DATAFRAME)
     def has_different_values(self, other_value: dict):
         """
@@ -922,6 +921,14 @@ class DataframeType(BaseType):
     @type_operator(FIELD_DATAFRAME)
     def has_same_values(self, other_value: dict):
         return ~self.has_different_values(other_value)
+
+    @type_operator(FIELD_DATAFRAME)
+    def is_ordered_by(self, other_value: dict) -> pd.Series:
+        """
+        Checking validity based on target order.
+        """
+        target: str = self.replace_prefix(other_value.get("target"))
+        return self.value[target].eq(self.value[target].sort_values(ignore_index=True))
 
 
 @export_type

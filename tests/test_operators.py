@@ -1,3 +1,5 @@
+import pandas as pd
+
 from business_rules.operators import (DataframeType, StringType,
                                       NumericType, BooleanType, SelectType,
                                       SelectMultipleType, GenericType)
@@ -2015,6 +2017,30 @@ class DataframeOperatorTests(TestCase):
         )
         result = DataframeType({"value": invalid_df, }).has_same_values({"target": "MHCAT", })
         self.assertTrue(result.equals(pandas.Series([True, True, True, True, True, ])))
+
+    def test_is_ordered_by(self):
+        """
+        Unit test for is_ordered_by operator.
+        The test creates 2 dataframes: one is valid, one is not
+        and executes the operator against the dataframes.
+        """
+        valid_df = pd.DataFrame.from_dict(
+            {
+                "USUBJID": [1, 1, 1, 1, 1, ],
+                "AESEQ": [1, 2, 3, 4, 5, ],
+            }
+        )
+        result = DataframeType({"value": valid_df, "column_prefix_map": {"--": "AE"}}).is_ordered_by({"target": "--SEQ"})
+        self.assertTrue(result.equals(pandas.Series([True, True, True, True, True, ])))
+
+        invalid_df = pd.DataFrame.from_dict(
+            {
+                "USUBJID": [1, 1, 1, 1, 1, ],
+                "AESEQ": [1, 2, 5, 3, 0, ],
+            }
+        )
+        result = DataframeType({"value": invalid_df, "column_prefix_map": {"--": "AE"}}).is_ordered_by({"target": "--SEQ"})
+        self.assertTrue(result.equals(pandas.Series([False, False, False, True, False, ])))
 
 
 class GenericOperatorTests(TestCase):
