@@ -350,6 +350,7 @@ Note: to compare floating point equality we just check that the difference is le
 * `does_not_reference_correct_codelist`
 * `does_not_use_valid_codelist_terms`
 * `uses_valid_codelist_terms`
+* `is_ordered_by`
 
 ### Returning data to your client
 
