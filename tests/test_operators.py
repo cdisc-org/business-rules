@@ -2027,7 +2027,7 @@ class DataframeOperatorTests(TestCase):
         valid_df = pd.DataFrame.from_dict(
             {
                 "USUBJID": [1, 1, 1, 1, 1, ],
-                "AESEQ": [1, 2, 3, 4, 5, ],
+                "AESEQ": [1, 2, 3, 4, 6, ],
             }
         )
         result = DataframeType({"value": valid_df, "column_prefix_map": {"--": "AE"}}).is_ordered_by({"target": "--SEQ"})
