@@ -930,6 +930,10 @@ class DataframeType(BaseType):
         target: str = self.replace_prefix(other_value.get("target"))
         return self.value[target].eq(self.value[target].sort_values(ignore_index=True))
 
+    @type_operator(FIELD_DATAFRAME)
+    def is_not_ordered_by(self, other_value: dict) -> pd.Series:
+        return ~self.is_ordered_by(other_value)
+
 
 @export_type
 class GenericType(SelectMultipleType, SelectType, StringType, NumericType, BooleanType):

@@ -2042,6 +2042,31 @@ class DataframeOperatorTests(TestCase):
         result = DataframeType({"value": invalid_df, "column_prefix_map": {"--": "AE"}}).is_ordered_by({"target": "--SEQ"})
         self.assertTrue(result.equals(pandas.Series([False, False, False, True, False, ])))
 
+    def test_is_not_ordered_by(self):
+        """
+        Unit test for is_ordered_by operator.
+        The test creates 2 dataframes: one is valid, one is not
+        and executes the operator against the dataframes.
+        """
+
+        valid_df = pd.DataFrame.from_dict(
+             {
+                "USUBJID": [1, 1, 1, 1, 1, ],
+                "AESEQ": [1, 2, 3, 4, 6, ],
+             }
+        )
+        result = DataframeType({"value": valid_df, "column_prefix_map": {"--": "AE"}}).is_not_ordered_by({"target": "--SEQ"})
+        self.assertTrue(result.equals(pandas.Series([False, False, False, False, False, ])))
+
+        invalid_df = pd.DataFrame.from_dict(
+             {
+                "USUBJID": [1, 1, 1, 1, 1, ],
+                "AESEQ": [1, 2, 5, 3, 0, ],
+             }
+        )
+        result = DataframeType({"value": invalid_df, "column_prefix_map": {"--": "AE"}}).is_not_ordered_by({"target": "--SEQ"})
+        self.assertTrue(result.equals(pandas.Series([True, True, True, False, True, ])))
+
 
 class GenericOperatorTests(TestCase):
     def test_shares_no_elements_with(self):
