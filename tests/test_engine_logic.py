@@ -1,3 +1,5 @@
+import pandas as pd
+
 from business_rules import engine
 from business_rules.variables import BaseVariables, dataframe_rule_variable
 from business_rules.operators import StringType
@@ -102,11 +104,33 @@ class EngineTests(TestCase):
         result = engine.check_conditions_recursively(conditions, variables)
         self.assertEqual(result, False)
 
-
     def test_check_all_condition_with_no_items_fails(self):
         with self.assertRaises(AssertionError):
             engine.check_conditions_recursively({'all': []}, BaseVariables())
 
+    @patch.object(engine, 'check_condition', return_value=pd.Series([True, True, False]))
+    def test_check_all_conditions_series(self, mock_check_condition):
+        conditions = {'all': [{'thing1': ''}, {'thing2': ''}]}
+
+        class DatasetVariables(BaseVariables):
+            @dataframe_rule_variable()
+            def get_dataset(self): return {"value": {"TEST": 2}}
+
+        variables = DatasetVariables()
+        result: pd.Series = engine.check_conditions_recursively(conditions, variables)
+        self.assertTrue(result.equals(pd.Series([True, True, False])))
+
+    @patch.object(engine, 'check_condition', return_value=pd.Series([True, True, False]))
+    def test_check_not_all_conditions(self, mock_check_condition):
+        conditions = {'not_all': [{'thing1': ''}, {'thing2': ''}]}
+
+        class DatasetVariables(BaseVariables):
+            @dataframe_rule_variable()
+            def get_dataset(self): return {"value": {"TEST": 2}}
+
+        variables = DatasetVariables()
+        result: pd.Series = engine.check_conditions_recursively(conditions, variables)
+        self.assertTrue(result.equals(pd.Series([False, False, True])))
 
     @patch.object(engine, 'check_condition', return_value=True)
     def test_check_any_conditions_with_all_true(self, *args):
