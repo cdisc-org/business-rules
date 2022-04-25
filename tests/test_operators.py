@@ -2054,7 +2054,7 @@ class DataframeOperatorTests(TestCase):
 
     def test_is_not_ordered_by(self):
         """
-        Unit test for is_ordered_by operator.
+        Unit test for is_not_ordered_by operator.
         The test creates 2 dataframes: one is valid, one is not
         and executes the operator against the dataframes.
         """
