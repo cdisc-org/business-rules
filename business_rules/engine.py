@@ -30,6 +30,9 @@ def run(rule, defined_variables, defined_actions):
 
 def check_conditions_recursively(conditions, defined_variables):
     keys = list(conditions.keys())
+    if keys == ["not"]:
+        return ~check_conditions_recursively(conditions["not"], defined_variables)
+
     if keys == ['all']:
         result = True
         assert len(conditions['all']) >= 1
@@ -37,15 +40,6 @@ def check_conditions_recursively(conditions, defined_variables):
         for condition in conditions['all']:
             check_result = check_conditions_recursively(condition, defined_variables)
             result = result & check_result
-        return result
-
-    elif keys == ['not_all']:
-        result = True
-        assert len(conditions['not_all']) >= 1
-        # Always check all conditions in the case that we are operating on a dataframe
-        for condition in conditions['not_all']:
-            check_result = check_conditions_recursively(condition, defined_variables)
-            result = result & ~check_result
         return result
 
     elif keys == ['any']:
@@ -67,7 +61,7 @@ def check_conditions_recursively(conditions, defined_variables):
     else:
         # help prevent errors - any and all can only be in the condition dict
         # if they're the only item
-        assert not ('any' in keys or 'all' in keys or 'not_all' in keys)
+        assert not ('any' in keys or 'all' in keys)
         return check_condition(conditions, defined_variables)
 
 def check_condition(condition, defined_variables):
