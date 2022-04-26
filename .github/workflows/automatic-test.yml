@@ -34,7 +34,6 @@ jobs:
     # running the tests
       - name: Running Tests
         run: |
-          cd tests
-          nosetests test_operators.py
+          nosetests
           
           
