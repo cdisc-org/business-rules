@@ -149,6 +149,18 @@ class EngineTests(TestCase):
         result: pd.Series = engine.check_conditions_recursively(conditions, variables)
         self.assertTrue(result.equals(pd.Series([False, False, True])))
 
+    @patch.object(engine, 'check_condition', return_value=pd.Series([True, True, False]))
+    def test_check_not_all_conditions_series_results_single_condition_nested_not(self, mock_check_condition):
+        conditions = {'not': {'not': {'all': [{'thing1': ''}, {'thing2': ''}]}}}
+
+        class DatasetVariables(BaseVariables):
+            @dataframe_rule_variable()
+            def get_dataset(self): return {"value": {"TEST": 2}}
+
+        variables = DatasetVariables()
+        result: pd.Series = engine.check_conditions_recursively(conditions, variables)
+        self.assertTrue(result.equals(pd.Series([True, True, False])))
+
     @patch.object(engine, 'check_condition')
     def test_check_not_all_conditions_series_results_multiple_conditions(self, mock_check_condition):
         condition_results = {
