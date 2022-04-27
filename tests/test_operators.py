@@ -2037,10 +2037,10 @@ class DataframeOperatorTests(TestCase):
         valid_df = pd.DataFrame.from_dict(
             {
                 "USUBJID": [1, 1, 1, 1, 1, ],
-                "AESEQ": [1, 2, 3, 4, 6, ],
+                "AESEQ": [1,2,3,4,5, ],
             }
         )
-        result = DataframeType({"value": valid_df, "column_prefix_map": {"--": "AE"}}).is_ordered_by({"target": "--SEQ"})
+        result = DataframeType({"value": valid_df, "column_prefix_map": {"--": "AE"}}).is_ordered_by({"target": "--SEQ","order": "asc"})
         self.assertTrue(result.equals(pandas.Series([True, True, True, True, True, ])))
 
         invalid_df = pd.DataFrame.from_dict(
@@ -2049,7 +2049,7 @@ class DataframeOperatorTests(TestCase):
                 "AESEQ": [1, 2, 5, 3, 0, ],
             }
         )
-        result = DataframeType({"value": invalid_df, "column_prefix_map": {"--": "AE"}}).is_ordered_by({"target": "--SEQ"})
+        result = DataframeType({"value": invalid_df, "column_prefix_map": {"--": "AE"}}).is_ordered_by({"target": "--SEQ","order": "asc"})
         self.assertTrue(result.equals(pandas.Series([False, False, False, True, False, ])))
 
         # validating for strings
@@ -2060,7 +2060,7 @@ class DataframeOperatorTests(TestCase):
             }
         )
         result = DataframeType({"value": valid_df, "column_prefix_map": {"--": "AE"}}).is_ordered_by(
-            {"target": "--SEQ"})
+            {"target": "--SEQ","order": "asc"})
         self.assertTrue(result.equals(pandas.Series([True, True, True, True, True, ])))
 
         invalid_df = pd.DataFrame.from_dict(
@@ -2071,7 +2071,7 @@ class DataframeOperatorTests(TestCase):
         )
 
         result = DataframeType({"value": invalid_df, "column_prefix_map": {"--": "AE"}}).is_ordered_by(
-            {"target": "--SEQ"})
+            {"target": "--SEQ","order": "asc"})
         self.assertTrue(result.equals(pandas.Series([False, False, False, True, False, ])))
 
         # validating for date
@@ -2083,7 +2083,7 @@ class DataframeOperatorTests(TestCase):
         )
 
         result = DataframeType({"value": valid_df, "column_prefix_map": {"--": "AE"}}).is_ordered_by(
-            {"target": "--SEQ"})
+            {"target": "--SEQ","order": "asc"})
         self.assertTrue(result.equals(pandas.Series([True, True, True, True, True, ])))
 
         invalid_df = pd.DataFrame.from_dict(
@@ -2094,7 +2094,7 @@ class DataframeOperatorTests(TestCase):
         )
 
         result = DataframeType({"value": invalid_df, "column_prefix_map": {"--": "AE"}}).is_ordered_by(
-            {"target": "--SEQ"})
+            {"target": "--SEQ","order": "asc"})
         self.assertTrue(result.equals(pandas.Series([False, False, False, True, False, ])))
 
     def test_is_not_ordered_by(self):
@@ -2110,7 +2110,7 @@ class DataframeOperatorTests(TestCase):
                 "AESEQ": [1, 2, 3, 4, 6, ],
              }
         )
-        result = DataframeType({"value": valid_df, "column_prefix_map": {"--": "AE"}}).is_not_ordered_by({"target": "--SEQ"})
+        result = DataframeType({"value": valid_df, "column_prefix_map": {"--": "AE"}}).is_not_ordered_by({"target": "--SEQ","order": "asc"})
         self.assertTrue(result.equals(pandas.Series([False, False, False, False, False, ])))
 
         invalid_df = pd.DataFrame.from_dict(
@@ -2119,7 +2119,7 @@ class DataframeOperatorTests(TestCase):
                 "AESEQ": [1, 2, 5, 3, 0, ],
              }
         )
-        result = DataframeType({"value": invalid_df, "column_prefix_map": {"--": "AE"}}).is_not_ordered_by({"target": "--SEQ"})
+        result = DataframeType({"value": invalid_df, "column_prefix_map": {"--": "AE"}}).is_not_ordered_by({"target": "--SEQ","order": "asc"})
         self.assertTrue(result.equals(pandas.Series([True, True, True, False, True, ])))
 
         # Checking validity for strings
@@ -2130,7 +2130,7 @@ class DataframeOperatorTests(TestCase):
             }
         )
         result = DataframeType({"value": valid_df, "column_prefix_map": {"--": "AE"}}).is_not_ordered_by(
-            {"target": "--SEQ"})
+            {"target": "--SEQ","order": "asc"})
         self.assertTrue(result.equals(pandas.Series([False, False, False, False, False, ])))
 
         invalid_df = pd.DataFrame.from_dict(
@@ -2140,7 +2140,7 @@ class DataframeOperatorTests(TestCase):
             }
         )
         result = DataframeType({"value": invalid_df, "column_prefix_map": {"--": "AE"}}).is_not_ordered_by(
-            {"target": "--SEQ"})
+            {"target": "--SEQ","order": "asc"})
         self.assertTrue(result.equals(pandas.Series([True, True, True, False, True, ])))
 
         # Checking validating for date
@@ -2151,7 +2151,7 @@ class DataframeOperatorTests(TestCase):
             }
         )
         result = DataframeType({"value": valid_df, "column_prefix_map": {"--": "AE"}}).is_not_ordered_by(
-            {"target": "--SEQ"})
+            {"target": "--SEQ","order": "asc"})
         self.assertTrue(result.equals(pandas.Series([False, False, False, False, False, ])))
         invalid_df = pd.DataFrame.from_dict(
             {
@@ -2160,7 +2160,7 @@ class DataframeOperatorTests(TestCase):
             }
         )
         result = DataframeType({"value": invalid_df, "column_prefix_map": {"--": "AE"}}).is_not_ordered_by(
-            {"target": "--SEQ"})
+            {"target": "--SEQ","order": "asc"})
         self.assertTrue(result.equals(pandas.Series([True, True, True, False, True, ])))
 
 
