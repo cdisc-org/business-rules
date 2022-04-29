@@ -30,6 +30,9 @@ def run(rule, defined_variables, defined_actions):
 
 def check_conditions_recursively(conditions, defined_variables):
     keys = list(conditions.keys())
+    if keys == ["not"]:
+        return ~check_conditions_recursively(conditions["not"], defined_variables)
+
     if keys == ['all']:
         result = True
         assert len(conditions['all']) >= 1
