@@ -931,9 +931,7 @@ class DataframeType(BaseType):
         sort_order: str =other_value.get("order","asc")
         if sort_order not in ["asc","dsc"]:
             raise ValueError ("invalid sorting order")
-        sort_order_bool:bool= True
-        if sort_order == "dsc":
-            sort_order_bool = False
+        sort_order_bool: bool = sort_order == "asc"
         return self.value[target].eq(self.value[target].sort_values(ascending=sort_order_bool, ignore_index=True))
 
     @type_operator(FIELD_DATAFRAME)

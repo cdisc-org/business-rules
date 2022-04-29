@@ -2037,10 +2037,20 @@ class DataframeOperatorTests(TestCase):
         valid_df = pd.DataFrame.from_dict(
             {
                 "USUBJID": [1, 1, 1, 1, 1, ],
-                "AESEQ": [1,2,3,4,5, ],
+                "AESEQ": [1, 2, 3, 4, 5, ],
             }
         )
         result = DataframeType({"value": valid_df, "column_prefix_map": {"--": "AE"}}).is_ordered_by({"target": "--SEQ","order": "asc"})
+        self.assertTrue(result.equals(pandas.Series([True, True, True, True, True, ])))
+
+        valid_dsc_df = pd.DataFrame.from_dict(
+            {
+                "USUBJID": [1, 1, 1, 1, 1, ],
+                "AESEQ": [5, 4, 3, 2, 1, ],
+            }
+        )
+        result = DataframeType({"value": valid_dsc_df, "column_prefix_map": {"--": "AE"}}).is_ordered_by(
+            {"target": "--SEQ", "order": "dsc"})
         self.assertTrue(result.equals(pandas.Series([True, True, True, True, True, ])))
 
         invalid_df = pd.DataFrame.from_dict(
@@ -2061,6 +2071,17 @@ class DataframeOperatorTests(TestCase):
         )
         result = DataframeType({"value": valid_df, "column_prefix_map": {"--": "AE"}}).is_ordered_by(
             {"target": "--SEQ","order": "asc"})
+        self.assertTrue(result.equals(pandas.Series([True, True, True, True, True, ])))
+
+        valid_dsc_df = pd.DataFrame.from_dict(
+            {
+                "USUBJID": ['a', 'a', 'a', 'a', 'a', ],
+                "AESEQ": ['e', 'd', 'c', 'b', 'a', ],
+
+            }
+        )
+        result = DataframeType({"value": valid_dsc_df, "column_prefix_map": {"--": "AE"}}).is_ordered_by(
+            {"target": "--SEQ", "order": "dsc"})
         self.assertTrue(result.equals(pandas.Series([True, True, True, True, True, ])))
 
         invalid_df = pd.DataFrame.from_dict(
@@ -2084,6 +2105,16 @@ class DataframeOperatorTests(TestCase):
 
         result = DataframeType({"value": valid_df, "column_prefix_map": {"--": "AE"}}).is_ordered_by(
             {"target": "--SEQ","order": "asc"})
+        self.assertTrue(result.equals(pandas.Series([True, True, True, True, True, ])))
+
+        valid_dsc_df = pd.DataFrame.from_dict(
+            {
+                "USUBJID": ["2020-02-23", "2020-02-23", "2020-02-23", "2020-02-23", "2020-02-23", ],
+                "AESEQ": ["2020-02-27", "2020-02-26", "2020-02-25", "2020-02-24", "2020-02-23", ],
+            }
+        )
+        result = DataframeType({"value": valid_dsc_df, "column_prefix_map": {"--": "AE"}}).is_ordered_by(
+            {"target": "--SEQ", "order": "dsc"})
         self.assertTrue(result.equals(pandas.Series([True, True, True, True, True, ])))
 
         invalid_df = pd.DataFrame.from_dict(
@@ -2113,6 +2144,16 @@ class DataframeOperatorTests(TestCase):
         result = DataframeType({"value": valid_df, "column_prefix_map": {"--": "AE"}}).is_not_ordered_by({"target": "--SEQ","order": "asc"})
         self.assertTrue(result.equals(pandas.Series([False, False, False, False, False, ])))
 
+        valid_dsc_df = pd.DataFrame.from_dict(
+            {
+                "USUBJID": [1, 1, 1, 1, 1, ],
+                "AESEQ": [5, 4, 3, 2, 1, ],
+            }
+        )
+        result = DataframeType({"value": valid_dsc_df, "column_prefix_map": {"--": "AE"}}).is_not_ordered_by(
+            {"target": "--SEQ", "order": "dsc"})
+        self.assertTrue(result.equals(pandas.Series([False, False, False, False, False, ])))
+
         invalid_df = pd.DataFrame.from_dict(
              {
                 "USUBJID": [1, 1, 1, 1, 1, ],
@@ -2131,6 +2172,17 @@ class DataframeOperatorTests(TestCase):
         )
         result = DataframeType({"value": valid_df, "column_prefix_map": {"--": "AE"}}).is_not_ordered_by(
             {"target": "--SEQ","order": "asc"})
+        self.assertTrue(result.equals(pandas.Series([False, False, False, False, False, ])))
+
+        valid_dsc_df = pd.DataFrame.from_dict(
+            {
+                "USUBJID": ['a', 'a', 'a', 'a', 'a', ],
+                "AESEQ": ['e', 'd', 'c', 'b', 'a', ],
+
+            }
+        )
+        result = DataframeType({"value": valid_dsc_df, "column_prefix_map": {"--": "AE"}}).is_not_ordered_by(
+            {"target": "--SEQ", "order": "dsc"})
         self.assertTrue(result.equals(pandas.Series([False, False, False, False, False, ])))
 
         invalid_df = pd.DataFrame.from_dict(
@@ -2153,6 +2205,17 @@ class DataframeOperatorTests(TestCase):
         result = DataframeType({"value": valid_df, "column_prefix_map": {"--": "AE"}}).is_not_ordered_by(
             {"target": "--SEQ","order": "asc"})
         self.assertTrue(result.equals(pandas.Series([False, False, False, False, False, ])))
+
+        valid_dsc_df = pd.DataFrame.from_dict(
+            {
+                "USUBJID": ["2020-02-23", "2020-02-23", "2020-02-23", "2020-02-23", "2020-02-23", ],
+                "AESEQ": ["2020-02-27", "2020-02-26", "2020-02-25", "2020-02-24", "2020-02-23", ],
+            }
+        )
+        result = DataframeType({"value": valid_dsc_df, "column_prefix_map": {"--": "AE"}}).is_not_ordered_by(
+            {"target": "--SEQ", "order": "dsc"})
+        self.assertTrue(result.equals(pandas.Series([False, False, False, False, False, ])))
+
         invalid_df = pd.DataFrame.from_dict(
             {
                 "USUBJID": ["2020-02-23", "2020-02-23", "2020-02-23", "2020-02-23", "2020-02-23", ],
