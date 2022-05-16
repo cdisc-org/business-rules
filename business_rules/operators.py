@@ -1,5 +1,6 @@
 import inspect
 import re
+import copy
 from functools import wraps
 from typing import Union, Any, List
 from uuid import uuid4
@@ -937,6 +938,63 @@ class DataframeType(BaseType):
     @type_operator(FIELD_DATAFRAME)
     def is_not_ordered_by(self, other_value: dict) -> pd.Series:
         return ~self.is_ordered_by(other_value)
+
+    @type_operator(FIELD_DATAFRAME)
+    def target_is_sorted_by(self, other_value: dict) -> pd.Series:
+        """
+         Checking if  SESEQ is  sorted based on SESTDTC within USUBJID
+        """
+        target: str = self.replace_prefix(other_value.get("target"))
+        VAR1: str = self.replace_prefix(other_value.get("user_defined_columns")[0])[0]
+        VAR2: str = self.replace_prefix(other_value.get("user_defined_columns")[1])[0]
+
+        hashMap = {}
+        temp_seseq= []
+        for item in self.value[VAR1]:
+            try:
+                hashMap[item] += 1
+            except KeyError:
+                hashMap[item] = 1
+            finally:
+                temp_seseq.append(hashMap[item])
+
+        if type(item) is str:
+            for i in range(len(temp_seseq)):
+                temp_seseq[i] = chr(ord("`")+temp_seseq[i])
+
+        tracker = copy.copy(self.value[VAR1])
+
+        for i in range(len(self.value[VAR1])):
+            for j in range(len(self.value[VAR1]) - i - 1):
+                if self.value[VAR1][j] > self.value[VAR1][j + 1]:
+                    self.value[VAR1][j], self.value[VAR1][j + 1] = self.value[VAR1][j + 1], self.value[VAR1][j]
+                    temp_seseq[j], temp_seseq[j + 1] = temp_seseq[j + 1], temp_seseq[j]
+                    self.value[VAR2][j], self.value[VAR2][j + 1] = self.value[VAR2][j + 1], self.value[VAR2][j]
+
+        hashMin = {}
+        for index in range(len(self.value[VAR1])):
+            try:
+                hashMin[self.value[VAR1][index]]
+            except KeyError:
+                hashMin[self.value[VAR1][index]] = []
+            finally:
+                hashMin[self.value[VAR1][index]].append(self.value[VAR2][index])
+
+        for key in hashMin:
+            hashMin[key].sort()
+
+        temp_target = []
+        for key in tracker:
+            ele = hashMin[key].pop(0)
+            for j in range(len(self.value[VAR2])):
+                if self.value[VAR1][j] == key and self.value[VAR2][j] == ele:
+                    temp_target.append(temp_seseq[j])
+
+        return self.value[target].eq(temp_target)
+
+    @type_operator(FIELD_DATAFRAME)
+    def target_is_not_sorted_by(self, other_value: dict) -> pd.Series:
+        return ~self.target_is_sorted_by(other_value)
 
 @export_type
 class GenericType(SelectMultipleType, SelectType, StringType, NumericType, BooleanType):
