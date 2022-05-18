@@ -944,53 +944,49 @@ class DataframeType(BaseType):
         """
          Checking if  SESEQ is  sorted based on SESTDTC within USUBJID
         """
-        target: str = self.replace_prefix(other_value.get("target"))
-        VAR1: str = self.replace_prefix(other_value.get("user_defined_columns")[0])[0]
-        VAR2: str = self.replace_prefix(other_value.get("user_defined_columns")[1])[0]
 
+        target: str = self.replace_prefix(other_value.get("target"))
+        VAR1: str = self.replace_prefix(other_value.get("within"))
+        VAR2: str = self.replace_prefix(other_value.get("comparator"))
+
+        temp_seseq = self.create_count_map(VAR1)
+
+        if type(self.value[VAR1][0]) is str:
+            for i in range(len(temp_seseq)):
+                temp_seseq[i] = chr(ord("`")+temp_seseq[i])
+
+        my_df = self.value.sort_values(by=['USUBJID'], ascending=True,na_position='last')
+        grouped_df = my_df.sort_values(by=['SESTDTC'], ascending=True).groupby(["USUBJID"])
+
+        hash_min = {}
+        for key,item in grouped_df:
+            hash_min[key] = grouped_df.get_group(key)["SESTDTC"].tolist()
+
+        temp_target = self.create_temp_target(VAR1, VAR2, temp_seseq, hash_min)
+        #temp_target = self.create_temp_target(VAR3, VAR2, temp_seseq)
+
+        return self.value[target].eq(temp_target)
+
+    def create_count_map(self, within):
+        temp_seseq = []
         hashMap = {}
-        temp_seseq= []
-        for item in self.value[VAR1]:
+        for item in self.value[within]:
             try:
                 hashMap[item] += 1
             except KeyError:
                 hashMap[item] = 1
             finally:
                 temp_seseq.append(hashMap[item])
+        return temp_seseq
 
-        if type(item) is str:
-            for i in range(len(temp_seseq)):
-                temp_seseq[i] = chr(ord("`")+temp_seseq[i])
-
-        tracker = copy.copy(self.value[VAR1])
-
-        for i in range(len(self.value[VAR1])):
-            for j in range(len(self.value[VAR1]) - i - 1):
-                if self.value[VAR1][j] > self.value[VAR1][j + 1]:
-                    self.value[VAR1][j], self.value[VAR1][j + 1] = self.value[VAR1][j + 1], self.value[VAR1][j]
-                    temp_seseq[j], temp_seseq[j + 1] = temp_seseq[j + 1], temp_seseq[j]
-                    self.value[VAR2][j], self.value[VAR2][j + 1] = self.value[VAR2][j + 1], self.value[VAR2][j]
-
-        hashMin = {}
-        for index in range(len(self.value[VAR1])):
-            try:
-                hashMin[self.value[VAR1][index]]
-            except KeyError:
-                hashMin[self.value[VAR1][index]] = []
-            finally:
-                hashMin[self.value[VAR1][index]].append(self.value[VAR2][index])
-
-        for key in hashMin:
-            hashMin[key].sort()
-
+    def create_temp_target(self, within, comparator, target, hash_min):
         temp_target = []
-        for key in tracker:
-            ele = hashMin[key].pop(0)
-            for j in range(len(self.value[VAR2])):
-                if self.value[VAR1][j] == key and self.value[VAR2][j] == ele:
-                    temp_target.append(temp_seseq[j])
-
-        return self.value[target].eq(temp_target)
+        for key in self.value[within]:
+            ele = hash_min[key].pop(0)
+            for j in range(len(self.value[comparator])):
+                if self.value[within][j] == key and self.value[comparator][j] == ele:
+                    temp_target.append(target[j])
+        return temp_target
 
     @type_operator(FIELD_DATAFRAME)
     def target_is_not_sorted_by(self, other_value: dict) -> pd.Series:
