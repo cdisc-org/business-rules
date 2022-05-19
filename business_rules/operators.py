@@ -946,23 +946,23 @@ class DataframeType(BaseType):
         """
 
         target: str = self.replace_prefix(other_value.get("target"))
-        VAR1: str = self.replace_prefix(other_value.get("within"))
-        VAR2: str = self.replace_prefix(other_value.get("comparator"))
+        within: str = self.replace_prefix(other_value.get("within"))
+        comparator: str = self.replace_prefix(other_value.get("comparator"))
 
-        temp_seseq = self.create_count_map(VAR1)
+        temp_seseq = self.create_count_map(within)
 
-        if type(self.value[VAR1][0]) is str:
+        if type(self.value[within][0]) is str:
             for i in range(len(temp_seseq)):
                 temp_seseq[i] = chr(ord("`")+temp_seseq[i])
 
-        my_df = self.value.sort_values(by=['USUBJID'], ascending=True,na_position='last')
-        grouped_df = my_df.sort_values(by=['SESTDTC'], ascending=True).groupby(["USUBJID"])
+        sorted_df = self.value.sort_values(by=[within], ascending=True,na_position='last')
+        grouped_df = sorted_df.sort_values(by=[comparator], ascending=True).groupby([within])
 
         hash_min = {}
         for key,item in grouped_df:
-            hash_min[key] = grouped_df.get_group(key)["SESTDTC"].tolist()
+            hash_min[key] = grouped_df.get_group(key)[comparator].tolist()
 
-        temp_target = self.create_temp_target(VAR1, VAR2, temp_seseq, hash_min)
+        temp_target = self.create_temp_target(within,comparator, temp_seseq, hash_min)
         #temp_target = self.create_temp_target(VAR3, VAR2, temp_seseq)
 
         return self.value[target].eq(temp_target)

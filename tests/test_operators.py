@@ -2231,6 +2231,7 @@ class DataframeOperatorTests(TestCase):
         Unit test for target_is_sorted_by  operator.
         The test verifies if SESEQ is  sorted based on SESTDTC within USUBJID
         """
+        # where both the columns are unordered(neither asc nor dsc)
 
         valid_df = pd.DataFrame.from_dict(
             {
@@ -2245,15 +2246,41 @@ class DataframeOperatorTests(TestCase):
         self.assertTrue(result.equals(pandas.Series([True, True, True, True, True, ])))
 
         invalid_df = pd.DataFrame.from_dict(
-        {
-            "USUBJID": [1, 2, 2, 1, 1],
-            "SESEQ": [1, 2, 3, 1, 2],
-            "SESTDTC": [7, 9, 6, 10, 8],
-         }
+            {
+                "USUBJID": [1, 2, 2, 1, 1],
+                "SESEQ": [1, 2, 3, 1, 2],
+                "SESTDTC": [7, 9, 6, 10, 8],
+            }
         )
         other_value: dict = {"target": "SESEQ", "comparator": "SESTDTC", "within": "USUBJID"}
         result = DataframeType({"value": invalid_df}).target_is_sorted_by(other_value)
         self.assertTrue(result.equals(pandas.Series([True, True, False, False, True, ])))
+
+        #one column is ascending and other is descending
+
+        valid_ad_df = pd.DataFrame.from_dict(
+            {
+                "USUBJID": [1, 1, 1, 2, 2],
+                "SESEQ": [3, 2, 1, 2, 1],
+                "SESTDTC": [10, 9, 8, 7, 6],
+            }
+        )
+
+        other_value: dict = {"target": "SESEQ", "comparator": "SESTDTC", "within": "USUBJID"}
+        result = DataframeType({"value": valid_ad_df}).target_is_sorted_by(other_value)
+        self.assertTrue(result.equals(pandas.Series([True, True, True, True, True, ])))
+
+        valid_da_df = pd.DataFrame.from_dict(
+            {
+                "USUBJID": [2, 2, 2, 1, 1],
+                "SESEQ": [1, 2, 3, 1, 2],
+                "SESTDTC": [6, 7, 8, 9, 10],
+            }
+        )
+
+        other_value: dict = {"target": "SESEQ", "comparator": "SESTDTC", "within": "USUBJID"}
+        result = DataframeType({"value": valid_da_df}).target_is_sorted_by(other_value)
+        self.assertTrue(result.equals(pandas.Series([True, True, True, True, True, ])))
 
         #Sorting for strings
 
@@ -2305,6 +2332,32 @@ class DataframeOperatorTests(TestCase):
             other_value: dict = {"target": "SESEQ", "comparator": "SESTDTC", "within": "USUBJID"}
             result = DataframeType({"value":invalid_df}).target_is_not_sorted_by(other_value)
             self.assertTrue(result.equals(pandas.Series([False, False, True, True, False, ])))
+
+            # one column is ascending and other is descending
+
+            valid_ad_df = pd.DataFrame.from_dict(
+                {
+                    "USUBJID": [1, 1, 1, 2, 2],
+                    "SESEQ": [3, 2, 1, 2, 1],
+                    "SESTDTC": [10, 9, 8, 7, 6],
+                }
+            )
+
+            other_value: dict = {"target": "SESEQ", "comparator": "SESTDTC", "within": "USUBJID"}
+            result = DataframeType({"value": valid_ad_df}).target_is_not_sorted_by(other_value)
+            self.assertTrue(result.equals(pandas.Series([False, False, False, False, False, ])))
+
+            valid_da_df = pd.DataFrame.from_dict(
+                {
+                    "USUBJID": [2, 2, 2, 1, 1],
+                    "SESEQ": [1, 2, 3, 1, 2],
+                    "SESTDTC": [6, 7, 8, 9, 10],
+                }
+            )
+
+            other_value: dict = {"target": "SESEQ", "comparator": "SESTDTC", "within": "USUBJID"}
+            result = DataframeType({"value": valid_da_df}).target_is_not_sorted_by(other_value)
+            self.assertTrue(result.equals(pandas.Series([False, False, False, False, False, ])))
 
             # Sorting for strings
 
