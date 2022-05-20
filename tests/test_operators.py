@@ -2231,17 +2231,18 @@ class DataframeOperatorTests(TestCase):
         Unit test for target_is_sorted_by  operator.
         The test verifies if SESEQ is  sorted based on SESTDTC within USUBJID
         """
+
         # where both the columns are unordered(neither asc nor dsc)
 
         valid_df = pd.DataFrame.from_dict(
             {
-                "USUBJID": [1,2,2,1,1 ],
+                "USUBJID": [1, 2, 2, 1, 1],
                 "SESEQ": [1, 2, 1, 3, 2],
                 "SESTDTC": [7, 9, 6, 10, 8],
             }
         )
 
-        other_value: dict = {"target": "SESEQ", "comparator": "SESTDTC", "within": "USUBJID"}
+        other_value:dict = {"target":"SESEQ", "user_defined_columns": {"USUBJID": "ASC", "SESTDTC": "DESC"}}
         result = DataframeType({"value": valid_df}).target_is_sorted_by(other_value)
         self.assertTrue(result.equals(pandas.Series([True, True, True, True, True, ])))
 
@@ -2252,7 +2253,8 @@ class DataframeOperatorTests(TestCase):
                 "SESTDTC": [7, 9, 6, 10, 8],
             }
         )
-        other_value: dict = {"target": "SESEQ", "comparator": "SESTDTC", "within": "USUBJID"}
+
+        other_value: dict = {"target": "SESEQ", "user_defined_columns": {"USUBJID": "ASC", "SESTDTC": "DESC"}}
         result = DataframeType({"value": invalid_df}).target_is_sorted_by(other_value)
         self.assertTrue(result.equals(pandas.Series([True, True, False, False, True, ])))
 
@@ -2266,7 +2268,7 @@ class DataframeOperatorTests(TestCase):
             }
         )
 
-        other_value: dict = {"target": "SESEQ", "comparator": "SESTDTC", "within": "USUBJID"}
+        other_value: dict = {"target": "SESEQ", "user_defined_columns": {"USUBJID": "ASC", "SESTDTC": "DESC"}}
         result = DataframeType({"value": valid_ad_df}).target_is_sorted_by(other_value)
         self.assertTrue(result.equals(pandas.Series([True, True, True, True, True, ])))
 
@@ -2278,7 +2280,7 @@ class DataframeOperatorTests(TestCase):
             }
         )
 
-        other_value: dict = {"target": "SESEQ", "comparator": "SESTDTC", "within": "USUBJID"}
+        other_value: dict = {"target": "SESEQ", "user_defined_columns": {"USUBJID": "ASC", "SESTDTC": "DESC"}}
         result = DataframeType({"value": valid_da_df}).target_is_sorted_by(other_value)
         self.assertTrue(result.equals(pandas.Series([True, True, True, True, True, ])))
 
@@ -2291,7 +2293,8 @@ class DataframeOperatorTests(TestCase):
                 "SESTDTC": ['g', 'i', 'f', 'j', 'h'],
             }
         )
-        other_value: dict = {"target": "SESEQ", "comparator": "SESTDTC", "within": "USUBJID"}
+
+        other_value: dict = {"target": "SESEQ", "user_defined_columns": {"USUBJID": "ASC", "SESTDTC": "DESC"}}
         result = DataframeType({"value": valid_df}).target_is_sorted_by(other_value)
         self.assertTrue(result.equals(pandas.Series([True, True, True, True, True, ])))
 
@@ -2302,9 +2305,51 @@ class DataframeOperatorTests(TestCase):
                 "SESTDTC": ['g', 'i', 'f', 'j', 'h'],
             }
         )
-        other_value: dict = {"target": "SESEQ", "comparator": "SESTDTC", "within": "USUBJID"}
-        result = DataframeType({"value":invalid_df}).target_is_sorted_by(other_value)
+        other_value: dict = {"target": "SESEQ", "user_defined_columns": {"USUBJID": "ASC", "SESTDTC": "DESC"}}
+        result = DataframeType({"value": invalid_df}).target_is_sorted_by(other_value)
         self.assertTrue(result.equals(pandas.Series([True, True, False, False, True, ])))
+
+        valid_df = pd.DataFrame.from_dict(
+             {
+                "USUBJID": ['A', 'B', 'B', 'A', 'A'],
+                "SESEQ": ['A', 'B', 'A', 'C', 'B'],
+               "SESTDTC": ['G', 'I', 'F', 'J', 'H'],
+             }
+         )
+
+        other_value: dict = {"target": "SESEQ", "user_defined_columns": {"USUBJID": "ASC", "SESTDTC": "DESC"}}
+        result = DataframeType({"value": valid_df}).target_is_sorted_by(other_value)
+        self.assertTrue(result.equals(pandas.Series([True, True, True, True, True, ])))
+
+        #sorting for multiple columns
+
+        valid_mul_df = pd.DataFrame.from_dict(
+            {
+                "USUBJID": [1, 2, 2, 1, 1],
+                "SESEQ": [1, 2, 1, 3, 2],
+                "SESTDTC": [7, 9, 6, 10, 8],
+                "SUBECTJID": [1, 2, 2, 1, 1],
+                "SMSTDTC": [7, 9, 6, 10, 8],
+            }
+        )
+
+        other_value: dict = {"target": "SESEQ","user_defined_columns": {"USUBJID": "ASC", "SESTDTC": "DESC", "SUBJECTID": "ASC", "SMSTDTC": "DESC"}}
+        result = DataframeType({"value": valid_mul_df}).target_is_sorted_by(other_value)
+        self.assertTrue(result.equals(pandas.Series([True, True, True, True, True, ])))
+
+        invalid_mul_df = pd.DataFrame.from_dict(
+            {
+                "USUBJID": [1, 2, 2, 1, 1],
+                "SESEQ": [1, 2, 1, 2, 3],
+                "SESTDTC": [7, 9, 6, 10, 8],
+                "SUBJECTID": [1, 2, 2, 1, 1],
+                "SMSTDTC": [7, 9, 6, 10, 8],
+            }
+        )
+
+        other_value: dict = {"target": "SESEQ", "user_defined_columns": {"USUBJID": "ASC", "SESTDTC": "DESC", "SUBJECTID": "ASC","SMSTDTC": "DESC"}}
+        result = DataframeType({"value": invalid_mul_df}).target_is_sorted_by(other_value)
+        self.assertTrue(result.equals(pandas.Series([True, True, True, False, False, ])))
 
     def test_target_is_not_sorted_by(self):
             """
@@ -2313,12 +2358,12 @@ class DataframeOperatorTests(TestCase):
             """
             valid_df = pd.DataFrame.from_dict(
                 {
-                    "USUBJID": [1,2,2,1,1 ],
+                    "USUBJID": [1, 2, 2, 1, 1 ],
                     "SESEQ": [1, 2, 1, 3, 2],
                     "SESTDTC": [7, 9, 6, 10, 8],
                 }
             )
-            other_value: dict = {"target": "SESEQ", "comparator": "SESTDTC", "within": "USUBJID"}
+            other_value: dict = {"target": "SESEQ", "user_defined_columns": {"USUBJID": "ASC", "SESTDTC": "DESC"}}
             result = DataframeType({"value": valid_df}).target_is_not_sorted_by(other_value)
             self.assertTrue(result.equals(pandas.Series([False, False, False, False, False, ])))
 
@@ -2329,7 +2374,7 @@ class DataframeOperatorTests(TestCase):
                 "SESTDTC": [7, 9, 6, 10, 8],
              }
             )
-            other_value: dict = {"target": "SESEQ", "comparator": "SESTDTC", "within": "USUBJID"}
+            other_value: dict = {"target": "SESEQ", "user_defined_columns": {"USUBJID": "ASC", "SESTDTC": "DESC"}}
             result = DataframeType({"value":invalid_df}).target_is_not_sorted_by(other_value)
             self.assertTrue(result.equals(pandas.Series([False, False, True, True, False, ])))
 
@@ -2343,7 +2388,7 @@ class DataframeOperatorTests(TestCase):
                 }
             )
 
-            other_value: dict = {"target": "SESEQ", "comparator": "SESTDTC", "within": "USUBJID"}
+            other_value: dict = {"target": "SESEQ", "user_defined_columns": {"USUBJID": "ASC", "SESTDTC": "DESC"}}
             result = DataframeType({"value": valid_ad_df}).target_is_not_sorted_by(other_value)
             self.assertTrue(result.equals(pandas.Series([False, False, False, False, False, ])))
 
@@ -2355,7 +2400,7 @@ class DataframeOperatorTests(TestCase):
                 }
             )
 
-            other_value: dict = {"target": "SESEQ", "comparator": "SESTDTC", "within": "USUBJID"}
+            other_value: dict = {"target": "SESEQ", "user_defined_columns": {"USUBJID": "ASC", "SESTDTC": "DESC"}}
             result = DataframeType({"value": valid_da_df}).target_is_not_sorted_by(other_value)
             self.assertTrue(result.equals(pandas.Series([False, False, False, False, False, ])))
 
@@ -2368,7 +2413,7 @@ class DataframeOperatorTests(TestCase):
                     "SESTDTC": ['g', 'i', 'f', 'j', 'h'],
                 }
             )
-            other_value: dict = {"target": "SESEQ", "comparator": "SESTDTC", "within": "USUBJID"}
+            other_value: dict = {"target": "SESEQ", "user_defined_columns": {"USUBJID": "ASC", "SESTDTC": "DESC"}}
             result = DataframeType({"value": valid_df}).target_is_not_sorted_by(other_value)
             self.assertTrue(result.equals(pandas.Series([False, False, False, False, False, ])))
 
@@ -2379,9 +2424,39 @@ class DataframeOperatorTests(TestCase):
                     "SESTDTC": ['g', 'i', 'f', 'j', 'h'],
                 }
             )
-            other_value: dict = {"target": "SESEQ", "comparator": "SESTDTC", "within": "USUBJID"}
+            other_value: dict = {"target": "SESEQ", "user_defined_columns": {"USUBJID": "ASC", "SESTDTC": "DESC"}}
             result = DataframeType({"value": invalid_df}).target_is_not_sorted_by(other_value)
             self.assertTrue(result.equals(pandas.Series([False, False, True, True, False, ])))
+
+            # sorting for multiple columns
+
+            valid_mul_df = pd.DataFrame.from_dict(
+                {
+                    "USUBJID": [1, 2, 2, 1, 1],
+                    "SESEQ": [1, 2, 1, 3, 2],
+                    "SESTDTC": [7, 9, 6, 10, 8],
+                    "SUBJECTID": [1, 2, 2, 1, 1],
+                    "SMSTDTC": [7, 9, 6, 10, 8],
+                }
+            )
+
+            other_value: dict = {"target": "SESEQ", "user_defined_columns": {"USUBJID": "ASC", "SESTDTC": "DESC", "SUBJECTID": "ASC","SMSTDTC": "DESC"}}
+            result = DataframeType({"value": valid_mul_df}).target_is_not_sorted_by(other_value)
+            self.assertTrue(result.equals(pandas.Series([False, False, False, False, False, ])))
+
+            invalid_mul_df = pd.DataFrame.from_dict(
+                {
+                    "USUBJID": [1, 2, 2, 1, 1],
+                    "SESEQ": [1, 2, 1, 2, 3],
+                    "SESTDTC": [7, 9, 6, 10, 8],
+                    "SUBJECTID": [1, 2, 2, 1, 1],
+                    "SMSTDTC": [7, 9, 6, 10, 8],
+                }
+            )
+
+            other_value: dict = {"target": "SESEQ", "user_defined_columns": {"USUBJID": "ASC", "SESTDTC": "DESC", "SUBJECTID": "ASC", "SMSTDTC": "DESC"}}
+            result = DataframeType({"value":invalid_mul_df}).target_is_not_sorted_by(other_value)
+            self.assertTrue(result.equals(pandas.Series([False, False, False, True, True, ])))
 
 class GenericOperatorTests(TestCase):
     def test_shares_no_elements_with(self):
