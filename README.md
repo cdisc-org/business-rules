@@ -397,6 +397,10 @@ Note: to compare floating point equality we just check that the difference is le
 * `uses_valid_codelist_terms`
 * `is_ordered_by`
 * `is_not_ordered_by`
+* `suffix_equal_to`
+* `suffix_not_equal_to`
+* `prefix_equal_to`
+* `prefix_not_equal_to`
 
 ### Returning data to your client
 

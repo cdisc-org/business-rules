@@ -2226,6 +2226,110 @@ class DataframeOperatorTests(TestCase):
             {"target": "--SEQ","order": "asc"})
         self.assertTrue(result.equals(pandas.Series([True, True, True, False, True, ])))
 
+    def test_suffix_equal_to(self):
+        """
+        Unit test for suffix_equal_to operator.
+        """
+        valid_df = pd.DataFrame.from_dict(
+            {
+                "RDOMAIN": ["EC", "EC", "EC", ],
+                "$dataset_name": ["SUPPEC", "SUPPEC", "SUPPEC", ],
+            }
+        )
+        result = DataframeType({"value": valid_df, }).suffix_equal_to(
+            {"target": "$dataset_name", "comparator": "RDOMAIN", "suffix": 2, }
+        )
+        self.assertTrue(result.equals(pandas.Series([True, True, True, ])))
+
+        invalid_df = pd.DataFrame.from_dict(
+            {
+                "RDOMAIN": ["EC", "EC", "AE", ],
+                "$dataset_name": ["SUPPEC", "SUPPEC", "SUPPEC", ],
+            }
+        )
+        result = DataframeType({"value": invalid_df, }).suffix_equal_to(
+            {"target": "$dataset_name", "comparator": "RDOMAIN", "suffix": 2, }
+        )
+        self.assertTrue(result.equals(pandas.Series([True, True, False, ])))
+
+    def test_suffix_not_equal_to(self):
+        """
+        Unit test for suffix_not_equal_to operator.
+        """
+        valid_df = pd.DataFrame.from_dict(
+            {
+                "RDOMAIN": ["EC", "EC", "EC", ],
+                "$dataset_name": ["SUPPEC", "SUPPEC", "SUPPEC", ],
+            }
+        )
+        result = DataframeType({"value": valid_df, }).suffix_not_equal_to(
+            {"target": "$dataset_name", "comparator": "RDOMAIN", "suffix": 2, }
+        )
+        self.assertTrue(result.equals(pandas.Series([False, False, False, ])))
+
+        invalid_df = pd.DataFrame.from_dict(
+            {
+                "RDOMAIN": ["EC", "EC", "AE", ],
+                "$dataset_name": ["SUPPEC", "SUPPEC", "SUPPEC", ],
+            }
+        )
+        result = DataframeType({"value": invalid_df, }).suffix_not_equal_to(
+            {"target": "$dataset_name", "comparator": "RDOMAIN", "suffix": 2, }
+        )
+        self.assertTrue(result.equals(pandas.Series([False, False, True, ])))
+
+    def test_prefix_equal_to(self):
+        """
+        Unit test for prefix_equal_to operator.
+        """
+        valid_df = pd.DataFrame.from_dict(
+            {
+                "RDOMAIN": ["AE", "AE", "AE", ],
+                "IDVAR": ["AESEQ", "AESEQ", "AESEQ", ]
+            }
+        )
+        result = DataframeType({"value": valid_df, }).prefix_equal_to(
+            {"target": "IDVAR", "comparator": "RDOMAIN", "prefix": 2, }
+        )
+        self.assertTrue(result.equals(pandas.Series([True, True, True, ])))
+
+        invalid_df = pd.DataFrame.from_dict(
+            {
+                "RDOMAIN": ["AE", "AE", "EC", ],
+                "IDVAR": ["AESEQ", "AESEQ", "AESEQ", ]
+            }
+        )
+        result = DataframeType({"value": invalid_df, }).prefix_equal_to(
+            {"target": "IDVAR", "comparator": "RDOMAIN", "prefix": 2, }
+        )
+        self.assertTrue(result.equals(pandas.Series([True, True, False, ])))
+
+    def test_prefix_not_equal_to(self):
+        """
+        Unit test for prefix_not_equal_to operator.
+        """
+        valid_df = pd.DataFrame.from_dict(
+            {
+                "RDOMAIN": ["AE", "AE", "AE", ],
+                "IDVAR": ["AESEQ", "AESEQ", "AESEQ", ]
+            }
+        )
+        result = DataframeType({"value": valid_df, }).prefix_not_equal_to(
+            {"target": "IDVAR", "comparator": "RDOMAIN", "prefix": 2, }
+        )
+        self.assertTrue(result.equals(pandas.Series([False, False, False, ])))
+
+        invalid_df = pd.DataFrame.from_dict(
+            {
+                "RDOMAIN": ["AE", "AE", "EC", ],
+                "IDVAR": ["AESEQ", "AESEQ", "AESEQ", ]
+            }
+        )
+        result = DataframeType({"value": invalid_df, }).prefix_not_equal_to(
+            {"target": "IDVAR", "comparator": "RDOMAIN", "prefix": 2, }
+        )
+        self.assertTrue(result.equals(pandas.Series([False, False, True, ])))
+
 
 class GenericOperatorTests(TestCase):
     def test_shares_no_elements_with(self):
