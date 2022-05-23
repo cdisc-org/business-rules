@@ -946,11 +946,14 @@ class DataframeType(BaseType):
         """
 
         target: str = self.replace_prefix(other_value.get("target"))
-        columns = list(other_value["user_defined_columns"].keys())
+        within: str = self.replace_prefix(other_value.get("within"))
+        columns = other_value["comparator"]
 
-        for index in range(0, len(columns), 2):
-            within: str = self.replace_prefix(columns[index])
-            comparator: str = self.replace_prefix(columns[index+1])
+        for col in columns:
+            comparator: str = self.replace_prefix(list(col.items())[0][0])
+            params = list(col.items())[0][1]
+            sort_as: str = params[0]
+            na_pos: str = 'last'
 
             temp_seseq = self.create_count_map(within)
 
@@ -962,12 +965,27 @@ class DataframeType(BaseType):
                     for i in range(len(temp_seseq)):
                         temp_seseq[i] = chr(ord("`")+temp_seseq[i])
 
-            sorted_df = self.value.sort_values(by=[within], ascending=True,na_position='last')
-            grouped_df = sorted_df.sort_values(by=[comparator], ascending=True).groupby([within])
+            if len(params) == 2:
+                na_pos: str = params[1]
+
+            if sort_as is "DESC":
+                grouped_df = self.value.sort_values(
+                    by=[within, comparator],
+                    ascending=False,
+                    na_position=na_pos
+                ).groupby([within])
+            else:
+                grouped_df = self.value.sort_values(
+                    by=[within, comparator],
+                    ascending=True,
+                    na_position=na_pos
+                ).groupby([within])
+
             temp_target = self.create_temp_target(within, comparator, temp_seseq, grouped_df)
 
+            while len(target) != len(temp_target):
+                temp_target.append(None)
             return self.value[target].eq(temp_target)
-
 
     def get_min_hash(self, grouped_df, comparator):
         hash_min = {}
