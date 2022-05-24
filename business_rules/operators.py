@@ -967,18 +967,12 @@ class DataframeType(BaseType):
             if len(params) == 2:
                 na_pos: str = params[1]
 
-            if sort_as is "DESC":
-                grouped_df = self.value.sort_values(
-                    by=[within, comparator],
-                    ascending=False,
-                    na_position=na_pos
-                ).groupby([within])
-            else:
-                grouped_df = self.value.sort_values(
-                    by=[within, comparator],
-                    ascending=True,
-                    na_position=na_pos
-                ).groupby([within])
+            ascending = sort_as != "DESC"
+            grouped_df = self.value.sort_values(
+                by=[within, comparator],
+                ascending=ascending,
+                na_position=na_pos
+            ).groupby([within])
 
             temp_target = self.create_temp_target(within, comparator, temp_seseq, grouped_df)
 
