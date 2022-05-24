@@ -397,7 +397,7 @@ class DataframeType(BaseType):
         else:
             raise ValueError(f"Invalid part to validate: {part_to_validate}. Valid values are: suffix, prefix")
 
-        return series_to_validate.eq(comparison_data) & ~self.value[target].isin(["", None])
+        return series_to_validate.eq(comparison_data)
     
     @type_operator(FIELD_DATAFRAME)
     def less_than(self, other_value):
