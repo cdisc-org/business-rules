@@ -954,8 +954,7 @@ class DataframeType(BaseType):
             params = list(col.items())[0][1]
             sort_as: str = params[0]
             na_pos: str = 'last'
-
-            temp_seseq = self.create_count_map(within)
+            temp_seseq = (self.value.groupby(by=within).cumcount()+1).to_list()
 
             if type(self.value[within][0]) is str:
                 if self.value[within][0].isupper():
@@ -992,18 +991,6 @@ class DataframeType(BaseType):
         for key, item in grouped_df:
             hash_min[key] = grouped_df.get_group(key)[comparator].tolist()
         return hash_min
-
-    def create_count_map(self, within):
-        temp_seseq = []
-        hashMap = {}
-        for item in self.value[within]:
-            try:
-                hashMap[item] += 1
-            except KeyError:
-                hashMap[item] = 1
-            finally:
-                temp_seseq.append(hashMap[item])
-        return temp_seseq
 
     def create_temp_target(self, within, comparator, target, grouped_df):
         hash_min = self.get_min_hash(grouped_df, comparator)
