@@ -938,6 +938,21 @@ class DataframeType(BaseType):
     def is_not_ordered_by(self, other_value: dict) -> pd.Series:
         return ~self.is_ordered_by(other_value)
 
+    @type_operator(FIELD_DATAFRAME)
+    def value_has_multiple_references(self, other_value: dict) -> pd.Series:
+        """
+        Requires a target column and a reference count column whose values
+        are a dictionary containing the number of times that value appears.
+        """
+        target: str = self.replace_prefix(other_value.get("target"))
+        reference_count_column: str = self.replace_prefix(other_value.get("comparator"))
+        result = np.where(vectorized_get_dict_key(self.value[reference_count_column], self.value[target]) > 1, True, False)
+        return pd.Series(result)
+
+    @type_operator(FIELD_DATAFRAME)
+    def value_does_not_have_multiple_references(self, other_value: dict) -> pd.Series:
+        return ~self.value_has_multiple_references(other_value)
+
 @export_type
 class GenericType(SelectMultipleType, SelectType, StringType, NumericType, BooleanType):
 
