@@ -295,7 +295,7 @@ class DataframeType(BaseType):
             values[i] = self.replace_prefix(values[i])
         return values
     
-    def get_comparator_data(self, comparator, value_is_literal: bool = False):
+    def get_comparator_data(self, comparator, value_is_literal: bool = False) -> Union[str, pd.Series]:
         if value_is_literal:
             return comparator
         else:
@@ -337,6 +337,67 @@ class DataframeType(BaseType):
     @type_operator(FIELD_DATAFRAME)
     def not_equal_to(self, other_value):
         return ~self.equal_to(other_value)
+
+    @type_operator(FIELD_DATAFRAME)
+    def suffix_equal_to(self, other_value: dict) -> pd.Series:
+        """
+        Checks if target suffix is equal to comparator.
+        """
+        target: str = self.replace_prefix(other_value.get("target"))
+        value_is_literal: bool = other_value.get("value_is_literal", False)
+        comparator: Union[str, Any] = self.replace_prefix(other_value.get("comparator")) if not value_is_literal else other_value.get("comparator")
+        comparison_data: Union[str, pd.Series] = self.get_comparator_data(comparator, value_is_literal)
+        suffix: int = self.replace_prefix(other_value.get("suffix"))
+        return self._check_equality_of_string_part(target, comparison_data, "suffix", suffix)
+
+    @type_operator(FIELD_DATAFRAME)
+    def suffix_not_equal_to(self, other_value: dict) -> pd.Series:
+        """
+        Checks if target suffix is not equal to comparator.
+        """
+        return ~self.suffix_equal_to(other_value)
+
+    @type_operator(FIELD_DATAFRAME)
+    def prefix_equal_to(self, other_value: dict) -> pd.Series:
+        """
+        Checks if target prefix is equal to comparator.
+        """
+        target: str = self.replace_prefix(other_value.get("target"))
+        value_is_literal: bool = other_value.get("value_is_literal", False)
+        comparator: Union[str, Any] = self.replace_prefix(other_value.get("comparator")) if not value_is_literal else other_value.get("comparator")
+        comparison_data: Union[str, pd.Series] = self.get_comparator_data(comparator, value_is_literal)
+        prefix: int = self.replace_prefix(other_value.get("prefix"))
+        return self._check_equality_of_string_part(target, comparison_data, "prefix", prefix)
+
+    @type_operator(FIELD_DATAFRAME)
+    def prefix_not_equal_to(self, other_value: dict) -> pd.Series:
+        """
+        Checks if target prefix is not equal to comparator.
+        """
+        return ~self.prefix_equal_to(other_value)
+
+    def _check_equality_of_string_part(
+        self,
+        target: str,
+        comparison_data: Union[str, pd.Series],
+        part_to_validate: str,
+        length: int
+    ) -> pd.Series:
+        """
+        Checks if the given string part is equal to comparison data.
+        """
+        if not self.value[target].apply(type).eq(str).all():
+            raise ValueError("The operator can't be used with non-string values")
+
+        # compare
+        if part_to_validate == "suffix":
+            series_to_validate: pd.Series = self.value[target].str.slice(-length)
+        elif part_to_validate == "prefix":
+            series_to_validate: pd.Series = self.value[target].str.slice(start=0, step=length + 1)
+        else:
+            raise ValueError(f"Invalid part to validate: {part_to_validate}. Valid values are: suffix, prefix")
+
+        return series_to_validate.eq(comparison_data) & ~self.value[target].isin(["", None])
     
     @type_operator(FIELD_DATAFRAME)
     def less_than(self, other_value):

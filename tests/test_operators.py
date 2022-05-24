@@ -2236,11 +2236,19 @@ class DataframeOperatorTests(TestCase):
                 "$dataset_name": ["SUPPEC", "SUPPEC", "SUPPEC", ],
             }
         )
+        # check equality between 2 dataframe columns
         result = DataframeType({"value": valid_df, }).suffix_equal_to(
             {"target": "$dataset_name", "comparator": "RDOMAIN", "suffix": 2, }
         )
         self.assertTrue(result.equals(pandas.Series([True, True, True, ])))
 
+        # check equality between a dataframe column and a string
+        result = DataframeType({"value": valid_df, }).suffix_equal_to(
+            {"target": "$dataset_name", "comparator": "EC", "suffix": 2, "value_is_literal": True, }
+        )
+        self.assertTrue(result.equals(pandas.Series([True, True, True, ])))
+
+        # check equality between 2 dataframe columns
         invalid_df = pd.DataFrame.from_dict(
             {
                 "RDOMAIN": ["EC", "EC", "AE", ],
@@ -2249,6 +2257,18 @@ class DataframeOperatorTests(TestCase):
         )
         result = DataframeType({"value": invalid_df, }).suffix_equal_to(
             {"target": "$dataset_name", "comparator": "RDOMAIN", "suffix": 2, }
+        )
+        self.assertTrue(result.equals(pandas.Series([True, True, False, ])))
+
+        # check equality between a dataframe column and a string
+        invalid_df_1 = pd.DataFrame.from_dict(
+            {
+                "RDOMAIN": ["EC", "EC", "EC", ],
+                "$dataset_name": ["SUPPEC", "SUPPEC", "SUPPAE", ],
+            }
+        )
+        result = DataframeType({"value": invalid_df_1, }).suffix_equal_to(
+            {"target": "$dataset_name", "comparator": "EC", "suffix": 2, "value_is_literal": True, }
         )
         self.assertTrue(result.equals(pandas.Series([True, True, False, ])))
 
@@ -2262,11 +2282,19 @@ class DataframeOperatorTests(TestCase):
                 "$dataset_name": ["SUPPEC", "SUPPEC", "SUPPEC", ],
             }
         )
+        # check equality between 2 dataframe columns
         result = DataframeType({"value": valid_df, }).suffix_not_equal_to(
             {"target": "$dataset_name", "comparator": "RDOMAIN", "suffix": 2, }
         )
         self.assertTrue(result.equals(pandas.Series([False, False, False, ])))
 
+        # check equality between a dataframe column and a string
+        result = DataframeType({"value": valid_df, }).suffix_not_equal_to(
+            {"target": "$dataset_name", "comparator": "EC", "suffix": 2, "value_is_literal": True, }
+        )
+        self.assertTrue(result.equals(pandas.Series([False, False, False, ])))
+
+        # check equality between 2 dataframe columns
         invalid_df = pd.DataFrame.from_dict(
             {
                 "RDOMAIN": ["EC", "EC", "AE", ],
@@ -2275,6 +2303,18 @@ class DataframeOperatorTests(TestCase):
         )
         result = DataframeType({"value": invalid_df, }).suffix_not_equal_to(
             {"target": "$dataset_name", "comparator": "RDOMAIN", "suffix": 2, }
+        )
+        self.assertTrue(result.equals(pandas.Series([False, False, True, ])))
+
+        # check equality between a dataframe column and a string
+        invalid_df_1 = pd.DataFrame.from_dict(
+            {
+                "RDOMAIN": ["EC", "EC", "EC", ],
+                "$dataset_name": ["SUPPEC", "SUPPEC", "SUPPAE", ],
+            }
+        )
+        result = DataframeType({"value": invalid_df_1, }).suffix_not_equal_to(
+            {"target": "$dataset_name", "comparator": "EC", "suffix": 2, "value_is_literal": True, }
         )
         self.assertTrue(result.equals(pandas.Series([False, False, True, ])))
 
@@ -2288,11 +2328,19 @@ class DataframeOperatorTests(TestCase):
                 "IDVAR": ["AESEQ", "AESEQ", "AESEQ", ]
             }
         )
+        # check equality between 2 dataframe columns
         result = DataframeType({"value": valid_df, }).prefix_equal_to(
             {"target": "IDVAR", "comparator": "RDOMAIN", "prefix": 2, }
         )
         self.assertTrue(result.equals(pandas.Series([True, True, True, ])))
 
+        # check equality between a dataframe column and a string
+        result = DataframeType({"value": valid_df, }).prefix_equal_to(
+            {"target": "IDVAR", "comparator": "AE", "prefix": 2, "value_is_literal": True, }
+        )
+        self.assertTrue(result.equals(pandas.Series([True, True, True, ])))
+
+        # check equality between 2 dataframe columns
         invalid_df = pd.DataFrame.from_dict(
             {
                 "RDOMAIN": ["AE", "AE", "EC", ],
@@ -2301,6 +2349,18 @@ class DataframeOperatorTests(TestCase):
         )
         result = DataframeType({"value": invalid_df, }).prefix_equal_to(
             {"target": "IDVAR", "comparator": "RDOMAIN", "prefix": 2, }
+        )
+        self.assertTrue(result.equals(pandas.Series([True, True, False, ])))
+
+        # check equality between a dataframe column and a string
+        invalid_df_1 = pd.DataFrame.from_dict(
+            {
+                "RDOMAIN": ["AE", "AE", "EC", ],
+                "IDVAR": ["AESEQ", "AESEQ", "ECSEQ", ]
+            }
+        )
+        result = DataframeType({"value": invalid_df_1, }).prefix_equal_to(
+            {"target": "IDVAR", "comparator": "AE", "prefix": 2, "value_is_literal": True, }
         )
         self.assertTrue(result.equals(pandas.Series([True, True, False, ])))
 
@@ -2314,11 +2374,19 @@ class DataframeOperatorTests(TestCase):
                 "IDVAR": ["AESEQ", "AESEQ", "AESEQ", ]
             }
         )
+        # check equality between 2 dataframe columns
         result = DataframeType({"value": valid_df, }).prefix_not_equal_to(
             {"target": "IDVAR", "comparator": "RDOMAIN", "prefix": 2, }
         )
         self.assertTrue(result.equals(pandas.Series([False, False, False, ])))
 
+        # check equality between a dataframe column and a string
+        result = DataframeType({"value": valid_df, }).prefix_not_equal_to(
+            {"target": "IDVAR", "comparator": "AE", "prefix": 2, }
+        )
+        self.assertTrue(result.equals(pandas.Series([False, False, False, ])))
+
+        # check equality between 2 dataframe columns
         invalid_df = pd.DataFrame.from_dict(
             {
                 "RDOMAIN": ["AE", "AE", "EC", ],
@@ -2327,6 +2395,18 @@ class DataframeOperatorTests(TestCase):
         )
         result = DataframeType({"value": invalid_df, }).prefix_not_equal_to(
             {"target": "IDVAR", "comparator": "RDOMAIN", "prefix": 2, }
+        )
+        self.assertTrue(result.equals(pandas.Series([False, False, True, ])))
+
+        # check equality between a dataframe column and a string
+        invalid_df_1 = pd.DataFrame.from_dict(
+            {
+                "RDOMAIN": ["AE", "AE", "EC", ],
+                "IDVAR": ["AESEQ", "AESEQ", "ECSEQ", ]
+            }
+        )
+        result = DataframeType({"value": invalid_df_1, }).prefix_not_equal_to(
+            {"target": "IDVAR", "comparator": "AE", "prefix": 2, }
         )
         self.assertTrue(result.equals(pandas.Series([False, False, True, ])))
 
