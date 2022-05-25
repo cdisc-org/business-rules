@@ -944,28 +944,15 @@ class DataframeType(BaseType):
         """
          Checking if  SESEQ is  sorted based on SESTDTC within USUBJID
         """
-
         target: str = self.replace_prefix(other_value.get("target"))
         within: str = self.replace_prefix(other_value.get("within"))
         columns = other_value["comparator"]
 
         for col in columns:
-            comparator: str = self.replace_prefix(list(col.items())[0][0])
-            params = list(col.items())[0][1]
-            sort_as: str = params[0]
-            na_pos: str = 'last'
-            temp_seseq = (self.value.groupby(by=within).cumcount()+1).to_list()
-
-            if type(self.value[within][0]) is str:
-                if self.value[within][0].isupper():
-                    for i in range(len(temp_seseq)):
-                        temp_seseq[i] = chr(ord("@")+temp_seseq[i])
-                if self.value[within][0].islower():
-                    for i in range(len(temp_seseq)):
-                        temp_seseq[i] = chr(ord("`")+temp_seseq[i])
-
-            if len(params) == 2:
-                na_pos: str = params[1]
+            comparator: str = self.replace_prefix(col["name"])
+            sort_as: str = col["sort_order"]
+            na_pos: str = col["null_position"]
+            temp_seseq = self.value.groupby(within).cumcount().apply(lambda x: x + 1)
 
             ascending = sort_as != "DESC"
             grouped_df = self.value.sort_values(
