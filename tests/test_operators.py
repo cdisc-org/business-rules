@@ -2226,7 +2226,6 @@ class DataframeOperatorTests(TestCase):
             {"target": "--SEQ","order": "asc"})
         self.assertTrue(result.equals(pandas.Series([True, True, True, False, True, ])))
 
-
 class GenericOperatorTests(TestCase):
     def test_shares_no_elements_with(self):
         self.assertTrue(GenericType([1, 2]).
