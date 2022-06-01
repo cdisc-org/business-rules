@@ -4,7 +4,7 @@ import copy
 from functools import wraps
 from typing import Union, Any, List
 from uuid import uuid4
-
+from datetime import datetime
 import pandas
 import sys
 
@@ -953,6 +953,7 @@ class DataframeType(BaseType):
             sort_as: str = col["sort_order"]
             na_pos: str = col["null_position"]
             temp_seseq = self.value.groupby(within).cumcount().apply(lambda x: x + 1)
+            self.value[comparator] = self.value[comparator].apply(lambda x: datetime.fromisoformat(x) if (pd.notnull(x)) else x)
 
             ascending = sort_as != "DESC"
             grouped_df = self.value.sort_values(
@@ -967,14 +968,8 @@ class DataframeType(BaseType):
                 temp_target.append(None)
             return self.value[target].eq(temp_target)
 
-    def get_min_hash(self, grouped_df, comparator):
-        hash_min = {}
-        for key, item in grouped_df:
-            hash_min[key] = grouped_df.get_group(key)[comparator].tolist()
-        return hash_min
-
     def create_temp_target(self, within, comparator, target, grouped_df):
-        hash_min = self.get_min_hash(grouped_df, comparator)
+        hash_min = dict(map(lambda x: (x[0], grouped_df.get_group(x[0])[comparator].to_list()), grouped_df))
         temp_target = []
         for key in self.value[within]:
             ele = hash_min[key].pop(0)
