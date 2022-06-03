@@ -2388,7 +2388,7 @@ class DataframeOperatorTests(TestCase):
 
         other_value: dict = {"target": "--SEQ", "within": "USUBJID", "comparator": [{"name": "--STDTC", "sort_order": "ASC", "null_position": "last"}]}
         result = DataframeType({"value": valid_asc_df, "column_prefix_map": {"--": "SE"}}).target_is_not_sorted_by(other_value)
-        self.assertTrue(result.equals(pandas.Series([False, False, False, False, False  ])))
+        self.assertTrue(result.equals(pandas.Series([False, False, False, False, False, ])))
 
         valid_desc_df = pd.DataFrame.from_dict(
             {
@@ -2400,7 +2400,7 @@ class DataframeOperatorTests(TestCase):
 
         other_value: dict = {"target": "--SEQ", "within": "USUBJID","comparator": [{"name": "--STDTC", "sort_order": "DESC", "null_position": "last"}]}
         result = DataframeType({"value": valid_desc_df, "column_prefix_map": {"--": "SE"}}).target_is_not_sorted_by(other_value)
-        self.assertTrue(result.equals(pandas.Series([False, False, False, False, False  ])))
+        self.assertTrue(result.equals(pandas.Series([False, False, False, False, False, ])))
 
         valid_asc_df = pd.DataFrame.from_dict(
             {
@@ -2411,7 +2411,7 @@ class DataframeOperatorTests(TestCase):
         )
         other_value: dict = {"target": "--SEQ", "within": "USUBJID","comparator": [{"name": "--STDTC", "sort_order": "ASC", "null_position": "last"}]}
         result = DataframeType({"value": valid_asc_df, "column_prefix_map": {"--": "SE"}}).target_is_not_sorted_by(other_value)
-        self.assertTrue(result.equals(pandas.Series([False, False, False, False, False])))
+        self.assertTrue(result.equals(pandas.Series([False, False, False, False, False, ])))
 
         valid_desc_df = pd.DataFrame.from_dict(
             {
@@ -2422,7 +2422,7 @@ class DataframeOperatorTests(TestCase):
         )
         other_value: dict = {"target": "--SEQ", "within": "USUBJID", "comparator": [{"name": "--STDTC", "sort_order": "DESC", "null_position": "last"}]}
         result = DataframeType({"value": valid_desc_df, "column_prefix_map": {"--": "SE"}}).target_is_not_sorted_by(other_value)
-        self.assertTrue(result.equals(pandas.Series([False, False, False, False, False  ])))
+        self.assertTrue(result.equals(pandas.Series([False, False, False, False, False, ])))
 
         invalid_df = pd.DataFrame.from_dict(
             {
@@ -2434,7 +2434,7 @@ class DataframeOperatorTests(TestCase):
 
         other_value: dict = {"target": "--SEQ", "within": "USUBJID","comparator": [{"name": "--STDTC", "sort_order": "ASC", "null_position": "last"}]}
         result = DataframeType({"value": invalid_df, "column_prefix_map": {"--": "SE"}}).target_is_not_sorted_by(other_value)
-        self.assertTrue(result.equals(pandas.Series([False, False, True, True, False  ])))
+        self.assertTrue(result.equals(pandas.Series([False, False, True, True, False, ])))
 
         valid_mul_df = pd.DataFrame.from_dict(
             {
@@ -2449,7 +2449,7 @@ class DataframeOperatorTests(TestCase):
         other_value: dict = {"target": "--SEQ", "within": "USUBJID", "comparator": [{"name": "--STDTC", "sort_order": "ASC", "null_position": "last"},
                                                                                     {"name": "--ENDTC", "sort_order": "ASC", "null_position": "last"}]}
         result = DataframeType({"value": valid_mul_df, "column_prefix_map": {"--": "SE"}}).target_is_not_sorted_by(other_value)
-        self.assertTrue(result.equals(pandas.Series([False, False, False, False, False  ])))
+        self.assertTrue(result.equals(pandas.Series([False, False, False, False, False, ])))
 
         valid_mul_df = pd.DataFrame.from_dict(
             {
@@ -2464,7 +2464,7 @@ class DataframeOperatorTests(TestCase):
         other_value: dict = {"target": "--SEQ", "within": "USUBJID", "comparator": [{"name": "--STDTC", "sort_order": "DESC", "null_position": "last"},
                                                                                     {"name": "--ENDTC", "sort_order": "DESC", "null_position": "last"}]}
         result = DataframeType({"value": valid_mul_df, "column_prefix_map": {"--": "SE"}}).target_is_not_sorted_by(other_value)
-        self.assertTrue(result.equals(pandas.Series([False, False, False, False, False  ])))
+        self.assertTrue(result.equals(pandas.Series([False, False, False, False, False, ])))
 
         valid_mul_df = pd.DataFrame.from_dict(
             {
@@ -2479,7 +2479,7 @@ class DataframeOperatorTests(TestCase):
         other_value: dict = {"target": "--SEQ", "within": "USUBJID", "comparator": [{"name": "--STDTC", "sort_order": "ASC", "null_position": "last"},
                                                                                     {"name": "--ENDTC", "sort_order": "DESC", "null_position": "last"}]}
         result = DataframeType({"value": valid_mul_df, "column_prefix_map": {"--": "SE"}}).target_is_not_sorted_by( other_value)
-        self.assertTrue(result.equals(pandas.Series([False, False, False, False, False ])))
+        self.assertTrue(result.equals(pandas.Series([False, False, False, False, False, ])))
 
         invalid_mul_df = pd.DataFrame.from_dict(
             {
@@ -2506,7 +2506,7 @@ class DataframeOperatorTests(TestCase):
 
         other_value: dict = {"target": "--SEQ", "within": "USUBJID", "comparator": [{"name": "--STDTC", "sort_order": "ASC", "null_position": "last"}]}
         result = DataframeType({"value": valid_na_df, "column_prefix_map": {"--": "SE"}}).target_is_not_sorted_by(other_value)
-        self.assertTrue(result.equals(pandas.Series([False, False, False,True, True ])))
+        self.assertTrue(result.equals(pandas.Series([False, False, False,True, True, ])))
 
         invalid_na_df = pd.DataFrame.from_dict(
             {

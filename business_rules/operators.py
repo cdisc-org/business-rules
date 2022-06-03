@@ -953,7 +953,6 @@ class DataframeType(BaseType):
             sort_as: str = col["sort_order"]
             na_pos: str = col["null_position"]
             temp_seseq = self.value.groupby(within).cumcount().apply(lambda x: x + 1)
-            self.value[comparator] = self.value[comparator].apply(lambda x: datetime.fromisoformat(x) if (pd.notnull(x)) else x)
 
             ascending = sort_as != "DESC"
             grouped_df = self.value.sort_values(
@@ -974,8 +973,9 @@ class DataframeType(BaseType):
         for key in self.value[within]:
             ele = hash_min[key].pop(0)
             for j in range(len(self.value[comparator])):
-                if self.value[within][j] == key and self.value[comparator][j] == ele:
-                    temp_target.append(target[j])
+                if self.value[comparator][j] is not None:
+                    if self.value[within][j] == key and self.value[comparator][j] == ele:
+                        temp_target.append(target[j])
         return temp_target
 
     @type_operator(FIELD_DATAFRAME)
