@@ -2415,9 +2415,10 @@ class DataframeOperatorTests(TestCase):
         Unit test for target_is_sorted_by  operator.
         The test verifies if SESEQ is  sorted based on SESTDTC within USUBJID
         """
+
         valid_asc_df = pd.DataFrame.from_dict(
             {
-                "USUBJID": ["CDISC001","CDISC002", "CDISC002", "CDISC001", "CDISC001"],
+                "USUBJID": ["CDISC001", "CDISC002", "CDISC002", "CDISC001", "CDISC001"],
                 "SESEQ": [1, 2, 1, 3, 2],
                 "SESTDTC": ['2006-06-02', '2006-06-04', '2006-06-01', '2006-06-05', '2006-06-03'],
             }
@@ -2535,7 +2536,7 @@ class DataframeOperatorTests(TestCase):
         valid_na_df = pd.DataFrame.from_dict(
             {
                 "USUBJID": [123, 456, 456, 123, 123],
-                "SESEQ": [1, 2, 3, None, None],
+                "SESEQ": [1, 2, 1, None, None],
                 "SESTDTC": ['2006-06-02', None, '2006-06-01', None, '2006-06-03'],
             }
         )
@@ -2547,14 +2548,14 @@ class DataframeOperatorTests(TestCase):
         invalid_na_df = pd.DataFrame.from_dict(
             {
                 "USUBJID": [123, 456, 456, 123, 123],
-                "SESEQ": [3 ,2 ,1, None, None],
+                "SESEQ": [1 ,2 ,3, None, None],
                 "SESTDTC": ['2006-06-02', None, '2006-06-01', None, '2006-06-03'],
             }
         )
 
         other_value: dict = {"target": "--SEQ", "within": "USUBJID","comparator": [{"name": "--STDTC", "sort_order": "ASC", "null_position": "last"}]}
         result = DataframeType({"value":invalid_na_df, "column_prefix_map": {"--": "SE"}}).target_is_sorted_by(other_value)
-        self.assertTrue(result.equals(pandas.Series([False, True, False, False, False, ])))
+        self.assertTrue(result.equals(pandas.Series([True, True, False, False, False, ])))
 
 
     def test_target_is_not_sorted_by(self):
@@ -2562,6 +2563,7 @@ class DataframeOperatorTests(TestCase):
         Unit test for target_is_not_sorted_by  operator.
         The test verifies if SESEQ is not sorted based on SESTDTC within USUBJID
         """
+
         valid_asc_df = pd.DataFrame.from_dict(
             {
                 "USUBJID": ["CDISC001", "CDISC002", "CDISC002", "CDISC001", "CDISC001"],
@@ -2683,7 +2685,7 @@ class DataframeOperatorTests(TestCase):
         valid_na_df = pd.DataFrame.from_dict(
             {
                 "USUBJID": [123, 456, 456, 123, 123],
-                "SESEQ": [1, 2, 3, None, None],
+                "SESEQ": [1, 2, 1, None, None],
                 "SESTDTC": ['2006-06-02', None, '2006-06-01', None, '2006-06-03'],
             }
         )
@@ -2695,14 +2697,14 @@ class DataframeOperatorTests(TestCase):
         invalid_na_df = pd.DataFrame.from_dict(
             {
                 "USUBJID": [123, 456, 456, 123, 123],
-                "SESEQ": [3, 2, 1, None, None],
+                "SESEQ": [1, 2, 3, None, None],
                 "SESTDTC": ['2006-06-02', None, '2006-06-01', None, '2006-06-03'],
             }
         )
 
         other_value: dict = {"target": "--SEQ", "within": "USUBJID","comparator": [{"name": "--STDTC", "sort_order": "ASC", "null_position": "last"}]}
         result = DataframeType({"value": invalid_na_df, "column_prefix_map": {"--": "SE"}}).target_is_not_sorted_by(other_value)
-        self.assertTrue(result.equals(pandas.Series([True, False, True, True, True, ])))
+        self.assertTrue(result.equals(pandas.Series([False,False,True,True,True ])))
 
 class GenericOperatorTests(TestCase):
     def test_shares_no_elements_with(self):

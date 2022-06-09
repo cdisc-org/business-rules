@@ -1027,31 +1027,17 @@ class DataframeType(BaseType):
             comparator: str = self.replace_prefix(col["name"])
             sort_as: str = col["sort_order"]
             na_pos: str = col["null_position"]
-            temp_seseq = self.value.groupby(within).cumcount().apply(lambda x: x + 1)
 
             ascending = sort_as != "DESC"
             grouped_df = self.value.sort_values(
                 by=[within, comparator],
-                ascending=ascending,
                 na_position=na_pos
-            ).groupby([within])
-
-            temp_target = self.create_temp_target(within, comparator, temp_seseq, grouped_df)
-
-            while len(target) != len(temp_target):
-                temp_target.append(None)
-            return self.value[target].eq(temp_target)
-
-    def create_temp_target(self, within, comparator, target, grouped_df):
-        hash_min = dict(map(lambda x: (x[0], grouped_df.get_group(x[0])[comparator].to_list()), grouped_df))
-        temp_target = []
-        for key in self.value[within]:
-            ele = hash_min[key].pop(0)
-            for j in range(len(self.value[comparator])):
-                if self.value[comparator][j] is not None:
-                    if self.value[within][j] == key and self.value[comparator][j] == ele:
-                        temp_target.append(target[j])
-        return temp_target
+            ).groupby([within]).apply(lambda x: x)
+            temp_seseq = grouped_df.groupby(within).cumcount().apply(lambda x: x+1)
+            if not ascending:
+                grouped_df = grouped_df.reset_index(drop=True)
+                temp_seseq = grouped_df.groupby(within).cumcount().apply(lambda x: x + 1)[::-1].reset_index(drop=True)
+            return temp_seseq.eq(grouped_df[target]).sort_index(axis=0)
 
     @type_operator(FIELD_DATAFRAME)
     def target_is_not_sorted_by(self, other_value: dict) -> pd.Series:
