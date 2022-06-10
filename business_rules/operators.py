@@ -1,6 +1,5 @@
 import inspect
 import re
-import copy
 from functools import wraps
 from typing import Union, Any, List
 from uuid import uuid4
@@ -1017,27 +1016,27 @@ class DataframeType(BaseType):
     @type_operator(FIELD_DATAFRAME)
     def target_is_sorted_by(self, other_value: dict) -> pd.Series:
         """
-         Checking if  SESEQ is  sorted based on SESTDTC within USUBJID
+         Checking the sort order based on  comparators
         """
         target: str = self.replace_prefix(other_value.get("target"))
         within: str = self.replace_prefix(other_value.get("within"))
         columns = other_value["comparator"]
-
+        set_target = set()
         for col in columns:
             comparator: str = self.replace_prefix(col["name"])
-            sort_as: str = col["sort_order"]
+            ascending: str = col["sort_order"] != "DESC"
             na_pos: str = col["null_position"]
 
-            ascending = sort_as != "DESC"
-            grouped_df = self.value.sort_values(
+            grouped_df: pd.Series = self.value.sort_values(
                 by=[within, comparator],
                 na_position=na_pos
             ).groupby([within]).apply(lambda x: x)
-            temp_seseq = grouped_df.groupby(within).cumcount().apply(lambda x: x+1)
+            temp_target: pd.Series = grouped_df.groupby(within).cumcount().apply(lambda x: x+1)
             if not ascending:
                 grouped_df = grouped_df.reset_index(drop=True)
-                temp_seseq = grouped_df.groupby(within).cumcount().apply(lambda x: x + 1)[::-1].reset_index(drop=True)
-            return temp_seseq.eq(grouped_df[target]).sort_index(axis=0)
+                temp_target = temp_target[::-1].reset_index(drop=True)
+            set_target.add(tuple(temp_target.eq(grouped_df[target]).sort_index(axis=0)))
+        return temp_target.eq(grouped_df[target]).sort_index(axis=0)
 
     @type_operator(FIELD_DATAFRAME)
     def target_is_not_sorted_by(self, other_value: dict) -> pd.Series:

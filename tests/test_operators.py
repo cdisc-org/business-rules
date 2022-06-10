@@ -2413,7 +2413,7 @@ class DataframeOperatorTests(TestCase):
     def test_target_is_sorted_by(self):
         """
         Unit test for target_is_sorted_by  operator.
-        The test verifies if SESEQ is  sorted based on SESTDTC within USUBJID
+        The test verifies if --SEQ is  sorted based on set of  user-defined columns
         """
 
         valid_asc_df = pd.DataFrame.from_dict(
@@ -2508,15 +2508,15 @@ class DataframeOperatorTests(TestCase):
             {
                 "USUBJID": ["CDISC001", "CDISC002", "CDISC002", "CDISC001", "CDISC001"],
                 "SESEQ": [1, 2, 1, 3, 2],
-                "SESTDTC": ["2006-06-02", "2006-06-04", "2006-06-01", "2006-06-05", "2006-06-03"],
+                "SESTDTC": ['2006-06-02', '2006-06-04', '2006-06-01', '2006-06-05', '2006-06-03'],
                 "STUDYID": ["CDISCPILOT1", "CDISCPILOT1", "CDISCPILOT1", "CDISCPILOT1", "CDISCPILOT1"],
-                "SEENDTC": ["2006-06-02", "2006-06-04", "2006-06-01", "2006-06-05", "2006-06-03"],
+                "SEENDTC": ['2006-06-03', '2006-06-01', '2006-06-04', '2006-06-05', '2006-06-02'],
             }
         )
 
         other_value: dict = {"target": "--SEQ", "within": "USUBJID", "comparator": [{"name": "--STDTC", "sort_order": "ASC", "null_position": "last"},
                                                                                     {"name": "--ENDTC", "sort_order": "DESC", "null_position": "last"}]}
-        result = DataframeType({"value": valid_mul_df, "column_prefix_map": {"--": "SE"}}).target_is_sorted_by(other_value)
+        result = DataframeType({"value": valid_mul_df, "column_prefix_map": {"--": "SE"}}).target_is_sorted_by( other_value)
         self.assertTrue(result.equals(pandas.Series([True, True, True, True, True, ])))
 
         invalid_mul_df = pd.DataFrame.from_dict(
@@ -2529,7 +2529,7 @@ class DataframeOperatorTests(TestCase):
             }
         )
 
-        other_value: dict = {"target": "--SEQ", "within": "USUBJID","comparator": [{"name": "--STDTC", "sort_order": "ASC", "null_position": "last"},{"name": "--ENDTC", "sort_order": "DESC", "null_position": "last"}]}
+        other_value: dict = {"target": "--SEQ", "within": "USUBJID","comparator": [{"name": "--STDTC", "sort_order": "ASC", "null_position": "last"},{"name": "--ENDTC", "sort_order": "ASC", "null_position": "last"}]}
         result = DataframeType({"value": invalid_mul_df, "column_prefix_map": {"--": "SE"}}).target_is_sorted_by(other_value)
         self.assertTrue(result.equals(pandas.Series([True, True, False, False, True, ])))
 
@@ -2561,7 +2561,7 @@ class DataframeOperatorTests(TestCase):
     def test_target_is_not_sorted_by(self):
         """
         Unit test for target_is_not_sorted_by  operator.
-        The test verifies if SESEQ is not sorted based on SESTDTC within USUBJID
+        The test verifies if --SEQ is not sorted based on a set of user defined columns
         """
 
         valid_asc_df = pd.DataFrame.from_dict(
@@ -2656,16 +2656,18 @@ class DataframeOperatorTests(TestCase):
             {
                 "USUBJID": ["CDISC001", "CDISC002", "CDISC002", "CDISC001", "CDISC001"],
                 "SESEQ": [1, 2, 1, 3, 2],
-                "SESTDTC": ["2006-06-02", "2006-06-04", "2006-06-01", "2006-06-05", "2006-06-03"],
+                "SESTDTC": ['2006-06-02', '2006-06-04', '2006-06-01', '2006-06-05', '2006-06-03'],
                 "STUDYID": ["CDISCPILOT1", "CDISCPILOT1", "CDISCPILOT1", "CDISCPILOT1", "CDISCPILOT1"],
-                "SEENDTC": ["2006-06-02", "2006-06-04", "2006-06-01", "2006-06-05", "2006-06-03"],
+                "SEENDTC": ['2006-06-03', '2006-06-01', '2006-06-04', '2006-06-05', '2006-06-02'],
             }
         )
 
-        other_value: dict = {"target": "--SEQ", "within": "USUBJID", "comparator": [{"name": "--STDTC", "sort_order": "ASC", "null_position": "last"},
-                                                                                    {"name": "--ENDTC", "sort_order": "DESC", "null_position": "last"}]}
-        result = DataframeType({"value": valid_mul_df, "column_prefix_map": {"--": "SE"}}).target_is_not_sorted_by( other_value)
-        self.assertTrue(result.equals(pandas.Series([False, False, False, False, False, ])))
+        other_value: dict = {"target": "--SEQ", "within": "USUBJID",
+                             "comparator": [{"name": "--STDTC", "sort_order": "ASC", "null_position": "last"},
+                                            {"name": "--ENDTC", "sort_order": "DESC", "null_position": "last"}]}
+        result = DataframeType({"value": valid_mul_df, "column_prefix_map": {"--": "SE"}}).target_is_not_sorted_by(
+            other_value)
+        self.assertTrue(result.equals(pandas.Series([False, False, False, False, False,])))
 
         invalid_mul_df = pd.DataFrame.from_dict(
             {
@@ -2678,7 +2680,7 @@ class DataframeOperatorTests(TestCase):
         )
 
         other_value: dict = {"target": "--SEQ", "within": "USUBJID", "comparator": [{"name": "--STDTC", "sort_order": "ASC", "null_position": "last"},
-                                                                                    {"name": "--ENDTC", "sort_order": "DESC", "null_position": "last"}]}
+                                                                                    {"name": "--ENDTC", "sort_order": "ASC", "null_position": "last"}]}
         result = DataframeType({"value": invalid_mul_df, "column_prefix_map": {"--": "SE"}}).target_is_not_sorted_by( other_value)
         self.assertTrue(result.equals(pandas.Series([False, False, True, True, False, ])))
 
