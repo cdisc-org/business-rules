@@ -2415,7 +2415,6 @@ class DataframeOperatorTests(TestCase):
         Unit test for target_is_sorted_by  operator.
         The test verifies if --SEQ is  sorted based on set of  user-defined columns
         """
-
         valid_asc_df = pd.DataFrame.from_dict(
             {
                 "USUBJID": ["CDISC001", "CDISC002", "CDISC002", "CDISC001", "CDISC001"],

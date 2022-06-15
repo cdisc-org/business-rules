@@ -1021,7 +1021,6 @@ class DataframeType(BaseType):
         target: str = self.replace_prefix(other_value.get("target"))
         within: str = self.replace_prefix(other_value.get("within"))
         columns = other_value["comparator"]
-        set_target = set()
         for col in columns:
             comparator: str = self.replace_prefix(col["name"])
             ascending: str = col["sort_order"] != "DESC"
@@ -1035,7 +1034,6 @@ class DataframeType(BaseType):
             if not ascending:
                 grouped_df = grouped_df.reset_index(drop=True)
                 temp_target = temp_target[::-1].reset_index(drop=True)
-            set_target.add(tuple(temp_target.eq(grouped_df[target]).sort_index(axis=0)))
         return temp_target.eq(grouped_df[target]).sort_index(axis=0)
 
     @type_operator(FIELD_DATAFRAME)
