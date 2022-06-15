@@ -3,7 +3,6 @@ import re
 from functools import wraps
 from typing import Union, Any, List
 from uuid import uuid4
-
 import pandas
 import sys
 
@@ -398,7 +397,7 @@ class DataframeType(BaseType):
             raise ValueError(f"Invalid part to validate: {part_to_validate}. Valid values are: suffix, prefix")
 
         return series_to_validate.eq(comparison_data)
-    
+
     @type_operator(FIELD_DATAFRAME)
     def less_than(self, other_value):
         target = self.replace_prefix(other_value.get("target"))
@@ -1013,6 +1012,33 @@ class DataframeType(BaseType):
     @type_operator(FIELD_DATAFRAME)
     def value_does_not_have_multiple_references(self, other_value: dict) -> pd.Series:
         return ~self.value_has_multiple_references(other_value)
+
+    @type_operator(FIELD_DATAFRAME)
+    def target_is_sorted_by(self, other_value: dict) -> pd.Series:
+        """
+         Checking the sort order based on  comparators
+        """
+        target: str = self.replace_prefix(other_value.get("target"))
+        within: str = self.replace_prefix(other_value.get("within"))
+        columns = other_value["comparator"]
+        for col in columns:
+            comparator: str = self.replace_prefix(col["name"])
+            ascending: str = col["sort_order"] != "DESC"
+            na_pos: str = col["null_position"]
+
+            grouped_df: pd.Series = self.value.sort_values(
+                by=[within, comparator],
+                na_position=na_pos
+            ).groupby([within]).apply(lambda x: x)
+            temp_target: pd.Series = grouped_df.groupby(within).cumcount().apply(lambda x: x+1)
+            if not ascending:
+                grouped_df = grouped_df.reset_index(drop=True)
+                temp_target = temp_target[::-1].reset_index(drop=True)
+        return temp_target.eq(grouped_df[target]).sort_index(axis=0)
+
+    @type_operator(FIELD_DATAFRAME)
+    def target_is_not_sorted_by(self, other_value: dict) -> pd.Series:
+        return ~self.target_is_sorted_by(other_value)
 
 @export_type
 class GenericType(SelectMultipleType, SelectType, StringType, NumericType, BooleanType):

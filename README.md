@@ -397,6 +397,8 @@ Note: to compare floating point equality we just check that the difference is le
 * `uses_valid_codelist_terms`
 * `is_ordered_by`
 * `is_not_ordered_by`
+* `is_target_sorted_by`
+* `is_target_not_sorted_by`
 * `value_has_multiple_references`
 * `value_does_not_have_multiple_references`
 * `suffix_equal_to`
