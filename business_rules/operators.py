@@ -294,7 +294,7 @@ class DataframeType(BaseType):
             values[i] = self.replace_prefix(values[i])
         return values
     
-    def get_comparator_data(self, comparator, value_is_literal: bool = False) -> Union[str, pd.Series]:
+    def get_comparator_data(self, comparator, value_is_literal: bool = False) -> Union[str, int, pd.Series]:
         if value_is_literal:
             return comparator
         else:
@@ -554,7 +554,7 @@ class DataframeType(BaseType):
         target = self.replace_prefix(other_value.get("target"))
         comparator = other_value.get("comparator")
         value_is_literal: bool = other_value.get("value_is_literal", False)
-        comparison_data = self.get_comparator_data(comparator, value_is_literal)
+        comparison_data: Union[str, pd.Series] = self.get_comparator_data(comparator, value_is_literal)
         if isinstance(comparison_data, pd.Series):
             results = self.value.apply(lambda row: row[target].startswith(comparison_data[row.name]), axis=1)
         else:
@@ -566,7 +566,7 @@ class DataframeType(BaseType):
         target = self.replace_prefix(other_value.get("target"))
         comparator = other_value.get("comparator")
         value_is_literal: bool = other_value.get("value_is_literal", False)
-        comparison_data = self.get_comparator_data(comparator, value_is_literal)
+        comparison_data: Union[str, pd.Series] = self.get_comparator_data(comparator, value_is_literal)
         if isinstance(comparison_data, pd.Series):
             results = self.value.apply(lambda row: row[target].endswith(comparison_data[row.name]), axis=1)
         else:
@@ -575,9 +575,19 @@ class DataframeType(BaseType):
 
     @type_operator(FIELD_DATAFRAME)
     def has_equal_length(self, other_value: dict):
+        """
+        Checks that the target length is the same as comparator.
+        If comparing two columns (value_is_literal is False), the operator
+        compares lengths of values in these columns.
+        """
         target = self.replace_prefix(other_value.get("target"))
         comparator = other_value.get("comparator")
-        results = self.value[target].str.len().eq(comparator)
+        value_is_literal: bool = other_value.get("value_is_literal", False)
+        comparison_data: Union[int, pd.Series] = self.get_comparator_data(comparator, value_is_literal)
+        if isinstance(comparison_data, pd.Series):
+            results = self.value[target].str.len().eq(comparison_data.str.len())
+        else:
+            results = self.value[target].str.len().eq(comparator)
         return pd.Series(results)
 
     @type_operator(FIELD_DATAFRAME)
@@ -586,16 +596,31 @@ class DataframeType(BaseType):
 
     @type_operator(FIELD_DATAFRAME)
     def longer_than(self, other_value: dict):
+        """
+         Checks if the target is longer than the comparator.
+         If comparing two columns (value_is_literal is False), the operator
+         compares lengths of values in these columns.
+         """
         target = self.replace_prefix(other_value.get("target"))
         comparator = other_value.get("comparator")
-        results = self.value[target].str.len().gt(comparator)
+        value_is_literal: bool = other_value.get("value_is_literal", False)
+        comparison_data: Union[int, pd.Series] = self.get_comparator_data(comparator, value_is_literal)
+        if isinstance(comparison_data, pd.Series):
+            results = self.value[target].str.len().gt(comparison_data.str.len())
+        else:
+            results = self.value[target].str.len().gt(comparison_data)
         return pd.Series(results.values)
 
     @type_operator(FIELD_DATAFRAME)
     def longer_than_or_equal_to(self, other_value: dict):
         target = self.replace_prefix(other_value.get("target"))
         comparator = other_value.get("comparator")
-        results = self.value[target].str.len().ge(comparator)
+        value_is_literal: bool = other_value.get("value_is_literal", False)
+        comparison_data: Union[int, pd.Series] = self.get_comparator_data(comparator, value_is_literal)
+        if isinstance(comparison_data, pd.Series):
+            results = self.value[target].str.len().ge(comparison_data.str.len())
+        else:
+            results = self.value[target].str.len().ge(comparator)
         return pd.Series(results.values)
 
     @type_operator(FIELD_DATAFRAME)
