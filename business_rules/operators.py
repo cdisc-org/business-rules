@@ -553,14 +553,24 @@ class DataframeType(BaseType):
     def starts_with(self, other_value):
         target = self.replace_prefix(other_value.get("target"))
         comparator = other_value.get("comparator")
-        results = self.value[target].str.startswith(comparator)
+        value_is_literal: bool = other_value.get("value_is_literal", False)
+        comparison_data = self.get_comparator_data(comparator, value_is_literal)
+        if isinstance(comparison_data, pd.Series):
+            results = self.value.apply(lambda row: row[target].startswith(comparison_data[row.name]), axis=1)
+        else:
+            results = self.value[target].str.startswith(comparison_data)
         return pd.Series(results.values)
 
     @type_operator(FIELD_DATAFRAME)
     def ends_with(self, other_value):
         target = self.replace_prefix(other_value.get("target"))
         comparator = other_value.get("comparator")
-        results = self.value[target].str.endswith(comparator)
+        value_is_literal: bool = other_value.get("value_is_literal", False)
+        comparison_data = self.get_comparator_data(comparator, value_is_literal)
+        if isinstance(comparison_data, pd.Series):
+            results = self.value.apply(lambda row: row[target].endswith(comparison_data[row.name]), axis=1)
+        else:
+            results = self.value[target].str.endswith(comparator)
         return pd.Series(results.values)
 
     @type_operator(FIELD_DATAFRAME)
@@ -972,7 +982,7 @@ class DataframeType(BaseType):
     @type_operator(FIELD_DATAFRAME)
     def has_different_values(self, other_value: dict):
         """
-        The operator ensures that the target columns has different values.
+        The operator ensures that the target column has different values.
         """
         target: str = self.replace_prefix(other_value.get("target"))
         is_valid: bool = len(self.value[target].unique()) > 1

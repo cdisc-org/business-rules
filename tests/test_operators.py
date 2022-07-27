@@ -877,31 +877,40 @@ class DataframeOperatorTests(TestCase):
         df = pandas.DataFrame.from_dict({
             "var1": ["WORD", "test"],
             "var2": ["word", "TEST"],
-            "var3": ["another", "item"]
+            "var3": ["another", "item"],
+            "var4": ["WO", "abc"],
         })
         self.assertTrue(DataframeType({"value": df, "column_prefix_map": {"--": "va"}}).starts_with({
             "target": "--r1",
             "comparator": "WO",
+            "value_is_literal": True,
         }).equals(pandas.Series([True, False])))
         self.assertTrue(DataframeType({"value": df}).starts_with({
-            "target": "var2",
-            "comparator": "ABC",
-        }).equals(pandas.Series([False, False])))
+            "target": "var1",
+            "comparator": "var4",
+        }).equals(pandas.Series([True, False])))
 
     def test_ends_with(self):
         df = pandas.DataFrame.from_dict({
             "var1": ["WORD", "test"],
             "var2": ["word", "TEST"],
-            "var3": ["another", "item"]
+            "var3": ["another", "item"],
+            "var4": ["RD", "abc"],
         })
         self.assertTrue(DataframeType({"value": df, "column_prefix_map": {"--": "va"}}).ends_with({
             "target": "--r1",
             "comparator": "abc",
+            "value_is_literal": True,
         }).equals(pandas.Series([False, False])))
         self.assertTrue(DataframeType({"value": df}).ends_with({
             "target": "var1",
             "comparator": "est",
+            "value_is_literal": True,
         }).equals(pandas.Series([False, True])))
+        self.assertTrue(DataframeType({"value": df}).ends_with({
+            "target": "var1",
+            "comparator": "var4",
+        }).equals(pandas.Series([True, False])))
 
     def test_has_equal_length(self):
         df = pandas.DataFrame.from_dict(
