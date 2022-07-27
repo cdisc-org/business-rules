@@ -690,8 +690,10 @@ class DataframeType(BaseType):
     def date_comparison(self, other_value, operator):
         target = self.replace_prefix(other_value.get("target"))
         comparator = self.replace_prefix(other_value.get("comparator"))
+        value_is_literal: bool = other_value.get("value_is_literal", False)
+        comparison_data: Union[str, pd.Series] = self.get_comparator_data(comparator, value_is_literal)
         component = other_value.get("date_component")
-        results = np.where(vectorized_compare_dates(component, self.value[target], self.value.get(comparator, comparator), operator), True, False)
+        results = np.where(vectorized_compare_dates(component, self.value[target], comparison_data, operator), True, False)
         return pd.Series(results)
     
     @type_operator(FIELD_DATAFRAME)
@@ -795,7 +797,7 @@ class DataframeType(BaseType):
     def is_ordered_set(self, other_value):
         target = self.replace_prefix(other_value.get("target"))
         value = other_value.get("comparator")
-        if isinstance(value, list):
+        if not isinstance(value, str):
             raise Exception('Comparator must be a single String value')
             
         return not (False in self.value.groupby(value).agg(lambda x : list(x))[target].map(lambda x: sorted(x) == x).tolist())
@@ -804,7 +806,7 @@ class DataframeType(BaseType):
     def is_not_ordered_set(self, other_value):
         target = self.replace_prefix(other_value.get("target"))
         value = other_value.get("comparator")
-        if isinstance(value, list):
+        if not isinstance(value, str):
             raise Exception('Comparator must be a single String value')
             
         return False in self.value.groupby(value).agg(lambda x : list(x))[target].map(lambda x: sorted(x) == x).tolist() 
