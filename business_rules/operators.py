@@ -1,7 +1,7 @@
 import inspect
 import re
 from functools import wraps
-from typing import Union, Any, List
+from typing import Union, Any, List, Tuple
 from uuid import uuid4
 import pandas
 import sys
@@ -556,9 +556,9 @@ class DataframeType(BaseType):
         value_is_literal: bool = other_value.get("value_is_literal", False)
         comparison_data: Union[str, pd.Series] = self.get_comparator_data(comparator, value_is_literal)
         if isinstance(comparison_data, pd.Series):
-            results = self.value.apply(lambda row: row[target].startswith(comparison_data[row.name]), axis=1)
-        else:
-            results = self.value[target].str.startswith(comparison_data)
+            # need to convert series to tuple to make startswith operator work correctly
+            comparison_data: Tuple[str] = tuple(comparison_data)
+        results = self.value[target].str.startswith(comparison_data)
         return pd.Series(results.values)
 
     @type_operator(FIELD_DATAFRAME)
@@ -569,7 +569,7 @@ class DataframeType(BaseType):
         comparison_data: Union[str, pd.Series] = self.get_comparator_data(comparator, value_is_literal)
         if isinstance(comparison_data, pd.Series):
             # need to convert series to tuple to make endswith operator work correctly
-            comparison_data = tuple(comparison_data)
+            comparison_data: Tuple[str] = tuple(comparison_data)
         results = self.value[target].str.endswith(comparison_data)
         return pd.Series(results.values)
 
