@@ -568,9 +568,9 @@ class DataframeType(BaseType):
         value_is_literal: bool = other_value.get("value_is_literal", False)
         comparison_data: Union[str, pd.Series] = self.get_comparator_data(comparator, value_is_literal)
         if isinstance(comparison_data, pd.Series):
-            results = self.value.apply(lambda row: row[target].endswith(comparison_data[row.name]), axis=1)
-        else:
-            results = self.value[target].str.endswith(comparator)
+            # need to convert series to tuple to make endswith operator work correctly
+            comparison_data = tuple(comparison_data)
+        results = self.value[target].str.endswith(comparison_data)
         return pd.Series(results.values)
 
     @type_operator(FIELD_DATAFRAME)
