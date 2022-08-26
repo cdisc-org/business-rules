@@ -1,7 +1,7 @@
 import inspect
 import re
 from functools import wraps
-from typing import Union, Any, List
+from typing import Union, Any, List, Tuple
 from uuid import uuid4
 import pandas
 import sys
@@ -294,7 +294,7 @@ class DataframeType(BaseType):
             values[i] = self.replace_prefix(values[i])
         return values
     
-    def get_comparator_data(self, comparator, value_is_literal: bool = False) -> Union[str, pd.Series]:
+    def get_comparator_data(self, comparator, value_is_literal: bool = False) -> Union[str, int, pd.Series]:
         if value_is_literal:
             return comparator
         else:
@@ -553,21 +553,41 @@ class DataframeType(BaseType):
     def starts_with(self, other_value):
         target = self.replace_prefix(other_value.get("target"))
         comparator = other_value.get("comparator")
-        results = self.value[target].str.startswith(comparator)
+        value_is_literal: bool = other_value.get("value_is_literal", False)
+        comparison_data: Union[str, pd.Series] = self.get_comparator_data(comparator, value_is_literal)
+        if isinstance(comparison_data, pd.Series):
+            # need to convert series to tuple to make startswith operator work correctly
+            comparison_data: Tuple[str] = tuple(comparison_data)
+        results = self.value[target].str.startswith(comparison_data)
         return pd.Series(results.values)
 
     @type_operator(FIELD_DATAFRAME)
     def ends_with(self, other_value):
         target = self.replace_prefix(other_value.get("target"))
         comparator = other_value.get("comparator")
-        results = self.value[target].str.endswith(comparator)
+        value_is_literal: bool = other_value.get("value_is_literal", False)
+        comparison_data: Union[str, pd.Series] = self.get_comparator_data(comparator, value_is_literal)
+        if isinstance(comparison_data, pd.Series):
+            # need to convert series to tuple to make endswith operator work correctly
+            comparison_data: Tuple[str] = tuple(comparison_data)
+        results = self.value[target].str.endswith(comparison_data)
         return pd.Series(results.values)
 
     @type_operator(FIELD_DATAFRAME)
     def has_equal_length(self, other_value: dict):
+        """
+        Checks that the target length is the same as comparator.
+        If comparing two columns (value_is_literal is False), the operator
+        compares lengths of values in these columns.
+        """
         target = self.replace_prefix(other_value.get("target"))
         comparator = other_value.get("comparator")
-        results = self.value[target].str.len().eq(comparator)
+        value_is_literal: bool = other_value.get("value_is_literal", False)
+        comparison_data: Union[int, pd.Series] = self.get_comparator_data(comparator, value_is_literal)
+        if isinstance(comparison_data, pd.Series):
+            results = self.value[target].str.len().eq(comparison_data.str.len())
+        else:
+            results = self.value[target].str.len().eq(comparator)
         return pd.Series(results)
 
     @type_operator(FIELD_DATAFRAME)
@@ -576,16 +596,31 @@ class DataframeType(BaseType):
 
     @type_operator(FIELD_DATAFRAME)
     def longer_than(self, other_value: dict):
+        """
+         Checks if the target is longer than the comparator.
+         If comparing two columns (value_is_literal is False), the operator
+         compares lengths of values in these columns.
+         """
         target = self.replace_prefix(other_value.get("target"))
         comparator = other_value.get("comparator")
-        results = self.value[target].str.len().gt(comparator)
+        value_is_literal: bool = other_value.get("value_is_literal", False)
+        comparison_data: Union[int, pd.Series] = self.get_comparator_data(comparator, value_is_literal)
+        if isinstance(comparison_data, pd.Series):
+            results = self.value[target].str.len().gt(comparison_data.str.len())
+        else:
+            results = self.value[target].str.len().gt(comparison_data)
         return pd.Series(results.values)
 
     @type_operator(FIELD_DATAFRAME)
     def longer_than_or_equal_to(self, other_value: dict):
         target = self.replace_prefix(other_value.get("target"))
         comparator = other_value.get("comparator")
-        results = self.value[target].str.len().ge(comparator)
+        value_is_literal: bool = other_value.get("value_is_literal", False)
+        comparison_data: Union[int, pd.Series] = self.get_comparator_data(comparator, value_is_literal)
+        if isinstance(comparison_data, pd.Series):
+            results = self.value[target].str.len().ge(comparison_data.str.len())
+        else:
+            results = self.value[target].str.len().ge(comparator)
         return pd.Series(results.values)
 
     @type_operator(FIELD_DATAFRAME)
@@ -655,8 +690,10 @@ class DataframeType(BaseType):
     def date_comparison(self, other_value, operator):
         target = self.replace_prefix(other_value.get("target"))
         comparator = self.replace_prefix(other_value.get("comparator"))
+        value_is_literal: bool = other_value.get("value_is_literal", False)
+        comparison_data: Union[str, pd.Series] = self.get_comparator_data(comparator, value_is_literal)
         component = other_value.get("date_component")
-        results = np.where(vectorized_compare_dates(component, self.value[target], self.value.get(comparator, comparator), operator), True, False)
+        results = np.where(vectorized_compare_dates(component, self.value[target], comparison_data, operator), True, False)
         return pd.Series(results)
     
     @type_operator(FIELD_DATAFRAME)
@@ -760,7 +797,7 @@ class DataframeType(BaseType):
     def is_ordered_set(self, other_value):
         target = self.replace_prefix(other_value.get("target"))
         value = other_value.get("comparator")
-        if isinstance(value, list):
+        if not isinstance(value, str):
             raise Exception('Comparator must be a single String value')
             
         return not (False in self.value.groupby(value).agg(lambda x : list(x))[target].map(lambda x: sorted(x) == x).tolist())
@@ -769,7 +806,7 @@ class DataframeType(BaseType):
     def is_not_ordered_set(self, other_value):
         target = self.replace_prefix(other_value.get("target"))
         value = other_value.get("comparator")
-        if isinstance(value, list):
+        if not isinstance(value, str):
             raise Exception('Comparator must be a single String value')
             
         return False in self.value.groupby(value).agg(lambda x : list(x))[target].map(lambda x: sorted(x) == x).tolist() 
@@ -972,7 +1009,7 @@ class DataframeType(BaseType):
     @type_operator(FIELD_DATAFRAME)
     def has_different_values(self, other_value: dict):
         """
-        The operator ensures that the target columns has different values.
+        The operator ensures that the target column has different values.
         """
         target: str = self.replace_prefix(other_value.get("target"))
         is_valid: bool = len(self.value[target].unique()) > 1

@@ -877,89 +877,114 @@ class DataframeOperatorTests(TestCase):
         df = pandas.DataFrame.from_dict({
             "var1": ["WORD", "test"],
             "var2": ["word", "TEST"],
-            "var3": ["another", "item"]
+            "var3": ["another", "item"],
+            "var4": ["WO", "abc"],
         })
         self.assertTrue(DataframeType({"value": df, "column_prefix_map": {"--": "va"}}).starts_with({
             "target": "--r1",
             "comparator": "WO",
+            "value_is_literal": True,
         }).equals(pandas.Series([True, False])))
         self.assertTrue(DataframeType({"value": df}).starts_with({
-            "target": "var2",
-            "comparator": "ABC",
-        }).equals(pandas.Series([False, False])))
+            "target": "var1",
+            "comparator": "var4",
+        }).equals(pandas.Series([True, False])))
 
     def test_ends_with(self):
         df = pandas.DataFrame.from_dict({
             "var1": ["WORD", "test"],
             "var2": ["word", "TEST"],
-            "var3": ["another", "item"]
+            "var3": ["another", "item"],
+            "var4": ["RD", "abc"],
         })
         self.assertTrue(DataframeType({"value": df, "column_prefix_map": {"--": "va"}}).ends_with({
             "target": "--r1",
             "comparator": "abc",
+            "value_is_literal": True,
         }).equals(pandas.Series([False, False])))
         self.assertTrue(DataframeType({"value": df}).ends_with({
             "target": "var1",
             "comparator": "est",
+            "value_is_literal": True,
         }).equals(pandas.Series([False, True])))
+        self.assertTrue(DataframeType({"value": df}).ends_with({
+            "target": "var1",
+            "comparator": "var4",
+        }).equals(pandas.Series([True, False])))
 
     def test_has_equal_length(self):
         df = pandas.DataFrame.from_dict(
             {
-                "var_1": ['test', 'value']
+                "var_1": ['test', 'value'],
+                "col": ["alex", "val"]
             }
         )
         df_operator = DataframeType({"value": df, "column_prefix_map": {"--": "va"}})
         result = df_operator.has_equal_length({"target": "--r_1", "comparator": 4})
         self.assertTrue(result.equals(pandas.Series([True, False])))
 
+        result = df_operator.has_equal_length({"target": "var_1", "comparator": "col"})
+        self.assertTrue(result.equals(pandas.Series([True, False])))
+
     def test_has_not_equal_length(self):
         df = pandas.DataFrame.from_dict(
             {
-                "var_1": ['test', 'value']
+                "var_1": ['test', 'value'],
+                "col": ["alex", "val"]
             }
         )
         df_operator = DataframeType({"value": df, "column_prefix_map": {"--": "va"}})
         result = df_operator.has_not_equal_length({"target": "--r_1", "comparator": 4})
         self.assertTrue(result.equals(pandas.Series([False, True])))
 
+        result = df_operator.has_not_equal_length({"target": "var_1", "comparator": "col"})
+        self.assertTrue(result.equals(pandas.Series([False, True])))
+
     def test_longer_than(self):
         df = pandas.DataFrame.from_dict(
             {
-                "var_1": ['test', 'value']
+                "var_1": ['test', 'value'],
+                "col": ["a", "long text"]
             }
         )
         df_operator = DataframeType({"value": df, "column_prefix_map": {"--": "va"}})
         self.assertTrue(df_operator.longer_than({"target": "--r_1", "comparator": 3}).equals(pandas.Series([True, True])))
+        self.assertTrue(df_operator.longer_than({"target": "--r_1", "comparator": "col"}).equals(pandas.Series([True, False])))
 
     def test_longer_than_or_equal_to(self):
         df = pandas.DataFrame.from_dict(
             {
-                "var_1": ['test', 'alex']
+                "var_1": ['test', 'alex'],
+                "col": ["sh", "test"]
             }
         )
         df_operator = DataframeType({"value": df, "column_prefix_map": {"--": "va"}})
         self.assertTrue(df_operator.longer_than_or_equal_to({"target": "--r_1", "comparator": 3}).equals(pandas.Series([True, True])))
         self.assertTrue(df_operator.longer_than_or_equal_to({"target": "var_1", "comparator": 4}).equals(pandas.Series([True, True])))
+        self.assertTrue(df_operator.longer_than_or_equal_to({"target": "var_1", "comparator": "col"}).equals(pandas.Series([True, True])))
 
     def test_shorter_than(self):
         df = pandas.DataFrame.from_dict(
             {
-                "var_1": ['test', 'val']
+                "var_1": ['test', 'val'],
+                "col": ["longg", "abc"],
             }
         )
         df_operator = DataframeType({"value": df, "column_prefix_map": {"--": "va"}})
         self.assertTrue(df_operator.shorter_than({"target": "--r_1", "comparator": 5}).equals(pandas.Series([True, True])))
+        self.assertTrue(df_operator.shorter_than({"target": "--r_1", "comparator": "col"}).equals(pandas.Series([True, False])))
 
     def test_shorter_than_or_equal_to(self):
         df = pandas.DataFrame.from_dict(
             {
-                "var_1": ['test', 'alex']
+                "var_1": ['test', 'alex'],
+                "col": ["longg", "test"],
             }
         )
         df_operator = DataframeType({"value": df, "column_prefix_map": {"--": "va"}})
         self.assertTrue(df_operator.shorter_than_or_equal_to({"target": "--r_1", "comparator": 5}).equals(pandas.Series([True, True])))
         self.assertTrue(df_operator.shorter_than_or_equal_to({"target": "var_1", "comparator": 4}).equals(pandas.Series([True, True])))
+        self.assertTrue(df_operator.shorter_than_or_equal_to({"target": "var_1", "comparator": "col"}).equals(pandas.Series([True, True])))
 
     def test_contains_all(self):
         df = pandas.DataFrame.from_dict(
