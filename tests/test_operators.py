@@ -1033,17 +1033,17 @@ class DataframeOperatorTests(TestCase):
     def test_invalid_date(self):
         df = pandas.DataFrame.from_dict(
             {
-                "var1": ['2021', '2021', '2021', '2021', '2099'],
-                "var2": ["2099", "2022", "2034", "90999", "20999"],
-                "var3": ["1997-07", "1997-07-16", "1997-07-16T19:20:30.45+01:00", "1997-07-16T19:20:30+01:00", "1997-07-16T19:20+01:00"], 
+                "var1": ['2021', '2021', '2021', '2021', '2099', "2022", "2023"],
+                "var2": ["2099", "2022", "2034", "90999", "20999", "2022", "2023"],
+                "var3": ["1997-07", "1997-07-16", "1997-07-16T19:20:30.45+01:00", "1997-07-16T19:20:30+01:00", "1997-07-16T19:20+01:00", "2022-05-08T13:44:a", "2022-05-08T13:44:66"], 
             }
         )
         self.assertTrue(DataframeType({"value": df, "column_prefix_map": {"--": "va"}}).invalid_date({"target": "--r1"})
-            .equals(pandas.Series([False, False, False, False, False])))
+            .equals(pandas.Series([False, False, False, False, False, False, False])))
         self.assertTrue(DataframeType({"value": df}).invalid_date({"target": "var3"})
-            .equals(pandas.Series([False, False, False, False, False])))
+            .equals(pandas.Series([False, False, False, False, False, True, True])))
         self.assertTrue(DataframeType({"value": df}).invalid_date({"target": "var2"})
-            .equals(pandas.Series([False, False, False, True, True])))
+            .equals(pandas.Series([False, False, False, True, True, False, False])))
     
     def test_date_equal_to(self):
         df = pandas.DataFrame.from_dict(
