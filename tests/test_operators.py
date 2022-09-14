@@ -1045,6 +1045,15 @@ class DataframeOperatorTests(TestCase):
         self.assertTrue(DataframeType({"value": df}).invalid_date({"target": "var2"})
             .equals(pandas.Series([False, False, False, True, True, False, False])))
     
+    def test_invalid_date_incorrect_month_day_values(self):
+        df = pandas.DataFrame.from_dict(
+            {
+                "var3": ["1997-23", "1997-07-44", "1997-07-16T19:20:30.45+01:00", "1997-07-16T19:20:30+01:00", "1997-07-16T19:20+01:00"], 
+            }
+        )
+        self.assertTrue(DataframeType({"value": df}).invalid_date({"target": "var3"})
+            .equals(pandas.Series([True, True, False, False, False])))
+    
     def test_date_equal_to(self):
         df = pandas.DataFrame.from_dict(
             {

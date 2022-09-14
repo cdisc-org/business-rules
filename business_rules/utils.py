@@ -6,7 +6,7 @@ import numpy as np
 from dateutil.parser import parse
 import pytz
 
-iso_8601_regex = re.compile("^\d{4}(-\d\d(-\d\d(T\d\d:\d\d(:[0-5]\d)?(\.\d+)?(([+-]\d\d:\d\d)|Z)?)?)?)?$")
+iso_8601_regex = re.compile("^\d{4}(-[0-1]\d(-[0-3]\d(T\d\d:\d\d(:[0-5]\d)?(\.\d+)?(([+-]\d\d:\d\d)|Z)?)?)?)?$")
 
 def fn_name_to_pretty_label(name):
     return ' '.join([w.title() for w in name.split('_')])
