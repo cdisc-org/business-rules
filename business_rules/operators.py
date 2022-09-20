@@ -1077,6 +1077,27 @@ class DataframeType(BaseType):
     def target_is_not_sorted_by(self, other_value: dict) -> pd.Series:
         return ~self.target_is_sorted_by(other_value)
 
+    @type_operator(FIELD_DATAFRAME)
+    def variable_metadata_equal_to(self, other_value: dict) -> pd.Series:
+        """
+        Validates the metadata for variables, provided in the metadata column, is equal to
+        the comparator.
+        Ex.
+        target: STUDYID
+        comparator: "Exp"
+        metadata_column: {"STUDYID": "Req", "DOMAIN": "Req"}
+        result: False       
+        """
+        target = self.replace_prefix(other_value.get("target"))
+        comparator = other_value.get("comparator") # Assumes the comparator is a value not a column
+        metadata_column = self.replace_prefix(other_value.get("metadata"))
+        result = np.where(vectorized_get_dict_key(self.value[metadata_column], target) == comparator, True, False)
+        return pd.Series(result)
+    
+    @type_operator(FIELD_DATAFRAME)
+    def variable_metadata_not_equal_to(self, other_value: dict) -> pd.Series:
+        return ~self.variable_metadata_equal_to(other_value)
+
 @export_type
 class GenericType(SelectMultipleType, SelectType, StringType, NumericType, BooleanType):
 
