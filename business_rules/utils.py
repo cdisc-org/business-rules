@@ -3,10 +3,8 @@ from datetime import datetime, tzinfo
 import re
 import inspect
 import numpy as np
-from dateutil.parser import parse
+from dateutil.parser import parse, isoparse
 import pytz
-
-iso_8601_regex = re.compile("^\d{4}(-\d\d(-\d\d(T\d\d:\d\d(:\d\d)?(\.\d+)?(([+-]\d\d:\d\d)|Z)?)?)?)?$")
 
 def fn_name_to_pretty_label(name):
     return ' '.join([w.title() for w in name.split('_')])
@@ -48,7 +46,11 @@ def float_to_decimal(f):
     return result
 
 def is_valid_date(date_string: str) -> bool:
-    return bool(iso_8601_regex.match(date_string))
+    try:
+        isoparse(date_string)
+    except:
+        return False
+    return True
 
 def get_year(date_string: str):
     timestamp = get_date(date_string)
