@@ -739,8 +739,12 @@ class DataframeType(BaseType):
             target_data = value
         else:
             target_data = [value, target]
-        target_data = self.replace_all_prefixes(target_data)
-        counts = self.value[target_data].groupby(target_data)[target].transform('size')
+        target_names = []
+        for target_name in target_data:
+            target_name = self.replace_prefix(target_name)
+            if target_name in self.value.columns:
+                target_names.append(target_name)
+        counts = self.value[target_names].groupby(target_names)[target].transform('size')
         results = np.where(counts <= 1, True, False)
         return pd.Series(results)
 
