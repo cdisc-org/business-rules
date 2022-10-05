@@ -126,7 +126,7 @@ def is_in(value, values):
     return value in values
 
 def case_insensitive_is_in(value, values):
-    return value in map(str.lower, values)
+    return value.lower() in map(str.lower, values)
 
 def compare_dates(component, target, comparator, operator):
     if not target or not comparator:
