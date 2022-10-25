@@ -440,11 +440,12 @@ class DataframeType(BaseType):
         value_is_literal = other_value.get("value_is_literal", False)
         comparator = self.replace_prefix(other_value.get("comparator")) if not value_is_literal else other_value.get("comparator")
         comparison_data = self.get_comparator_data(comparator, value_is_literal)
-        if self.is_column_of_iterables(self.value[target]):
+        if self.is_column_of_iterables(self.value[target]) or isinstance(comparison_data, str):
             results = vectorized_is_in(comparison_data, self.value[target])
         elif isinstance(comparator, pandas.core.series.Series):
             results = np.where(comparison_data.isin(self.value[target]), True, False)
         else:
+            # Handles numeric case. This case should never occur
             results = np.where(self.value[target] == comparison_data, True, False)
         return pd.Series(results)
     
@@ -461,10 +462,10 @@ class DataframeType(BaseType):
         comparison_data = self.convert_string_data_to_lower(comparison_data)
         if self.is_column_of_iterables(self.value[target]):
             results = vectorized_case_insensitive_is_in(comparison_data, self.value[target])
-        elif isinstance(comparator, pandas.core.series.Series):
+        elif isinstance(comparator, pandas.core.series.Series) or isinstance(comparison_data, pandas.core.series.Series):
             results = np.where(comparison_data.isin(self.value[target].str.lower()), True, False)
         else:
-            results = np.where(self.value[target].str.lower() == comparison_data, True, False)
+            results = vectorized_is_in(comparison_data.lower(), self.value[target].str.lower())
         return pd.Series(results)
 
     @type_operator(FIELD_DATAFRAME)
