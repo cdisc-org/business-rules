@@ -312,30 +312,71 @@ class DataframeType(BaseType):
     def not_exists(self, other_value):
         return ~self.exists(other_value)
     
+    def _check_equality(self, row, target, comparator, value_is_literal: bool = False, case_insensitive: bool = False) -> bool:
+        """
+        Equality checks work slightly differently for clinical datasets. See truth table below:
+        Operator       --A         --B         Outcome
+        equal_to       "" or null  "" or null  False
+        equal_to       "" or null  Populated   False
+        equal_to       Populated   "" or null  False
+        equal_to       Populated   Populated   A == B
+        """
+        comparison_data = comparator if comparator not in row or value_is_literal else row[comparator]
+        both_null = (comparison_data == "" or comparison_data is None) & (row[target] == "" or row[target] is None)
+        if both_null:
+            return False
+        if case_insensitive:
+            target_val = row[target].lower() if row[target] else None
+            comparison_val = comparison_data.lower() if comparison_data else None
+            return target_val == comparison_val
+        return row[target] == comparison_data
+
+    def _check_inequality(self, row, target, comparator, value_is_literal: bool = False, case_insensitive: bool = False) -> bool:
+        """
+        Equality checks work slightly differently for clinical datasets. See truth table below:
+        Operator       --A         --B         Outcome
+        not_equal_to   "" or null  "" or null  False
+        not_equal_to   "" or null  Populated   True
+        not_equal_to   Populated   "" or null  True
+        not_equal_to   Populated   Populated   A != B
+        """
+        comparison_data = comparator if comparator not in row or value_is_literal else row[comparator]
+        both_null = (comparison_data == "" or comparison_data is None) & (row[target] == "" or row[target] is None)
+        if both_null:
+            return False
+        if case_insensitive:
+            target_val = row[target].lower() if row[target] else None
+            comparison_val = comparison_data.lower() if comparison_data else None
+            return target_val != comparison_val
+        return row[target] != comparison_data
+
     @type_operator(FIELD_DATAFRAME)
     def equal_to(self, other_value) -> pd.Series:
         target = self.replace_prefix(other_value.get("target"))
         value_is_literal = other_value.get("value_is_literal", False)
         comparator = self.replace_prefix(other_value.get("comparator")) if not value_is_literal else other_value.get("comparator")
-        comparison_data = self.get_comparator_data(comparator, value_is_literal)
-        return self.value[target].eq(comparison_data) & ~self.value[target].isin(["", None])
+        return self.value.apply(lambda row: self._check_equality(row, target, comparator, value_is_literal), axis=1)
 
     @type_operator(FIELD_DATAFRAME)
     def equal_to_case_insensitive(self, other_value):
         target = self.replace_prefix(other_value.get("target"))
         value_is_literal = other_value.get("value_is_literal", False)
         comparator = self.replace_prefix(other_value.get("comparator")) if not value_is_literal else other_value.get("comparator")
-        comparison_data = self.get_comparator_data(comparator, value_is_literal)
-        comparison_data = self.convert_string_data_to_lower(comparison_data)
-        return (self.value[target].str.lower() == comparison_data) & ~self.value[target].isin(["", None])
+        return self.value.apply(lambda row: self._check_equality(row, target, comparator, value_is_literal, case_insensitive=True), axis=1)
 
     @type_operator(FIELD_DATAFRAME)
     def not_equal_to_case_insensitive(self, other_value):
-        return ~self.equal_to_case_insensitive(other_value)
+        target = self.replace_prefix(other_value.get("target"))
+        value_is_literal = other_value.get("value_is_literal", False)
+        comparator = self.replace_prefix(other_value.get("comparator")) if not value_is_literal else other_value.get("comparator")
+        return self.value.apply(lambda row: self._check_inequality(row, target, comparator, value_is_literal, case_insensitive=True), axis=1)
 
     @type_operator(FIELD_DATAFRAME)
     def not_equal_to(self, other_value):
-        return ~self.equal_to(other_value)
+        target = self.replace_prefix(other_value.get("target"))
+        value_is_literal = other_value.get("value_is_literal", False)
+        comparator = self.replace_prefix(other_value.get("comparator")) if not value_is_literal else other_value.get("comparator")
+        return self.value.apply(lambda row: self._check_inequality(row, target, comparator, value_is_literal), axis=1)
 
     @type_operator(FIELD_DATAFRAME)
     def suffix_equal_to(self, other_value: dict) -> pd.Series:
