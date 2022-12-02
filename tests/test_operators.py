@@ -287,6 +287,7 @@ class DataframeOperatorTests(TestCase):
             "var3": [1,3,8],
             "var4": [1,2,4],
             "var5": [None, None, None],
+            "var7": ["", "", ""],
             "var6": ["", None, "test"]
         })
         self.assertTrue(DataframeType({"value": df}).not_equal_to({
@@ -309,6 +310,10 @@ class DataframeOperatorTests(TestCase):
             "target": "var5",
             "comparator": "var6"
         }).equals(pandas.Series([False, False, True])))
+        self.assertTrue(DataframeType({"value": df}).not_equal_to({
+            "target": "var5",
+            "comparator": "var7"
+        }).equals(pandas.Series([False, False, False])))
 
     def test_equal_to_case_insensitive(self):
         df = pandas.DataFrame.from_dict({
@@ -355,6 +360,7 @@ class DataframeOperatorTests(TestCase):
             "var3": ["LET", "GO", "read"],
             "var4": ["WORD", "NEW", "VAL"],
             "var5": [None, None, None],
+            "var7": ["", "", ""],
             "var6": ["", None, "test"]
 
         })
@@ -375,6 +381,10 @@ class DataframeOperatorTests(TestCase):
             "target": "var5",
             "comparator": "var6"
         }).equals(pandas.Series([False, False, True])))
+        self.assertTrue(DataframeType({"value": df}).not_equal_to_case_insensitive({
+            "target": "var5",
+            "comparator": "var7"
+        }).equals(pandas.Series([False, False, False])))
 
     def test_less_than(self):
         df = pandas.DataFrame.from_dict({
