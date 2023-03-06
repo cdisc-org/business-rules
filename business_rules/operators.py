@@ -416,6 +416,60 @@ class DataframeType(BaseType):
         """
         return ~self.prefix_equal_to(other_value)
 
+    @type_operator(FIELD_DATAFRAME)
+    def prefix_is_contained_by(self, other_value: dict) -> pd.Series:
+        """
+        Checks if target prefix is contained by the comparator.
+        """
+        target: str = self.replace_prefix(other_value.get("target"))
+        value_is_literal: bool = other_value.get("value_is_literal", False)
+        comparator: Union[str, Any] = self.replace_prefix(other_value.get("comparator")) if not value_is_literal else other_value.get("comparator")
+        comparison_data: Union[str, pd.Series] = self.get_comparator_data(comparator, value_is_literal)
+        prefix_length: int = other_value.get("prefix")
+        series_to_validate: pd.Series = self._get_string_part_series("prefix", prefix_length, target)
+        return self._value_is_contained_by(series_to_validate, comparison_data)
+   
+    @type_operator(FIELD_DATAFRAME)
+    def prefix_is_not_contained_by(self, other_value: dict) -> pd.Series:
+        return ~self.prefix_is_contained_by(other_value)
+
+    @type_operator(FIELD_DATAFRAME)
+    def suffix_is_contained_by(self, other_value: dict) -> pd.Series:
+        """
+        Checks if target prefix is equal to comparator.
+        """
+        target: str = self.replace_prefix(other_value.get("target"))
+        value_is_literal: bool = other_value.get("value_is_literal", False)
+        comparator: Union[str, Any] = self.replace_prefix(other_value.get("comparator")) if not value_is_literal else other_value.get("comparator")
+        comparison_data: Union[str, pd.Series] = self.get_comparator_data(comparator, value_is_literal)
+        suffix_length: int = other_value.get("suffix")
+        series_to_validate: pd.Series = self._get_string_part_series("suffix", suffix_length, target)
+        return self._value_is_contained_by(series_to_validate, comparison_data)
+
+    @type_operator(FIELD_DATAFRAME)
+    def suffix_is_not_contained_by(self, other_value: dict) -> pd.Series:
+        return ~self.suffix_is_contained_by(other_value)
+    
+    def _get_string_part_series(self, part_to_validate: str, length: int, target: str):
+        if not self.value[target].apply(type).eq(str).all():
+            raise ValueError("The operator can't be used with non-string values")
+
+        if part_to_validate == "suffix":
+            series_to_validate: pd.Series = self.value[target].str.slice(-length)
+        elif part_to_validate == "prefix":
+            series_to_validate: pd.Series = self.value[target].str.slice(stop=length)
+        else:
+            raise ValueError(f"Invalid part to validate: {part_to_validate}. Valid values are: suffix, prefix")
+
+        return series_to_validate
+
+    def _value_is_contained_by(self, series: pd.Series, comparison_data) -> pd.Series:
+        if self.is_column_of_iterables(comparison_data):
+            results = vectorized_is_in(series, comparison_data)
+        else:
+            results = series.isin(comparison_data)
+        return pd.Series(results)
+
     def _check_equality_of_string_part(
         self,
         target: str,
@@ -426,17 +480,7 @@ class DataframeType(BaseType):
         """
         Checks if the given string part is equal to comparison data.
         """
-        if not self.value[target].apply(type).eq(str).all():
-            raise ValueError("The operator can't be used with non-string values")
-
-        # compare
-        if part_to_validate == "suffix":
-            series_to_validate: pd.Series = self.value[target].str.slice(-length)
-        elif part_to_validate == "prefix":
-            series_to_validate: pd.Series = self.value[target].str.slice(start=0, step=length + 1)
-        else:
-            raise ValueError(f"Invalid part to validate: {part_to_validate}. Valid values are: suffix, prefix")
-
+        series_to_validate = self._get_string_part_series(part_to_validate, length, target)
         return series_to_validate.eq(comparison_data)
 
     @type_operator(FIELD_DATAFRAME)
