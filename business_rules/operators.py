@@ -11,7 +11,8 @@ from .six import string_types, integer_types
 from .fields import (FIELD_DATAFRAME, FIELD_TEXT, FIELD_NUMERIC, FIELD_NO_INPUT,
                      FIELD_SELECT, FIELD_SELECT_MULTIPLE)
 from .utils import fn_name_to_pretty_label, float_to_decimal, vectorized_is_valid, vectorized_compare_dates, \
-    vectorized_is_complete_date, vectorized_len, vectorized_get_dict_key, vectorized_is_in, vectorized_case_insensitive_is_in
+    vectorized_is_complete_date, vectorized_len, vectorized_get_dict_key, vectorized_is_in, vectorized_case_insensitive_is_in, \
+    vectorized_apply_regex, apply_regex
 from decimal import Decimal, Inexact, Context
 import operator
 import numpy as np
@@ -634,6 +635,32 @@ class DataframeType(BaseType):
     @type_operator(FIELD_DATAFRAME)
     def not_matches_regex(self, other_value):
         return ~self.matches_regex(other_value)
+
+    @type_operator(FIELD_DATAFRAME)
+    def equals_string_part(self, other_value):
+        """
+        Checks that the values in the target column
+        equal the result of parsing the value in the comparison
+        column with a regex
+        """
+        target = self.replace_prefix(other_value.get("target"))
+        comparator = other_value.get("comparator")
+        regex = other_value.get("regex")
+        value_is_literal: bool = other_value.get("value_is_literal", False)
+        comparison_data: Union[str, pd.Series] = self.get_comparator_data(comparator, value_is_literal)
+        if isinstance(comparison_data, str):
+            parsed_data = apply_regex(regex, comparison_data)
+        else:
+            parsed_data = pd.Series(vectorized_apply_regex(regex, comparison_data))
+        print(parsed_data)
+        parsed_id = str(uuid4())
+        self.value[parsed_id] = parsed_data
+        return self.value.apply(lambda row: self._check_equality(row, target, parsed_id, value_is_literal), axis=1)
+
+    @type_operator(FIELD_DATAFRAME)
+    def does_not_equal_string_part(self, other_value):
+        return ~self.equals_string_part(other_value)
+
      
     @type_operator(FIELD_DATAFRAME)
     def starts_with(self, other_value):
