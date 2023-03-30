@@ -405,6 +405,8 @@ Note: to compare floating point equality we just check that the difference is le
 * `suffix_not_equal_to`
 * `prefix_equal_to`
 * `prefix_not_equal_to`
+* `equals_string_part`
+* `does_not_equal_string_part`
 
 ### Returning data to your client
 

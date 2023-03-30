@@ -11,7 +11,8 @@ from .six import string_types, integer_types
 from .fields import (FIELD_DATAFRAME, FIELD_TEXT, FIELD_NUMERIC, FIELD_NO_INPUT,
                      FIELD_SELECT, FIELD_SELECT_MULTIPLE)
 from .utils import fn_name_to_pretty_label, float_to_decimal, vectorized_is_valid, vectorized_compare_dates, \
-    vectorized_is_complete_date, vectorized_len, vectorized_get_dict_key, vectorized_is_in, vectorized_case_insensitive_is_in
+    vectorized_is_complete_date, vectorized_len, vectorized_get_dict_key, vectorized_is_in, vectorized_case_insensitive_is_in, \
+    vectorized_apply_regex, apply_regex
 from decimal import Decimal, Inexact, Context
 import operator
 import numpy as np
@@ -312,30 +313,71 @@ class DataframeType(BaseType):
     def not_exists(self, other_value):
         return ~self.exists(other_value)
     
+    def _check_equality(self, row, target, comparator, value_is_literal: bool = False, case_insensitive: bool = False) -> bool:
+        """
+        Equality checks work slightly differently for clinical datasets. See truth table below:
+        Operator       --A         --B         Outcome
+        equal_to       "" or null  "" or null  False
+        equal_to       "" or null  Populated   False
+        equal_to       Populated   "" or null  False
+        equal_to       Populated   Populated   A == B
+        """
+        comparison_data = comparator if comparator not in row or value_is_literal else row[comparator]
+        both_null = (comparison_data == "" or comparison_data is None) & (row[target] == "" or row[target] is None)
+        if both_null:
+            return False
+        if case_insensitive:
+            target_val = row[target].lower() if row[target] else None
+            comparison_val = comparison_data.lower() if comparison_data else None
+            return target_val == comparison_val
+        return row[target] == comparison_data
+
+    def _check_inequality(self, row, target, comparator, value_is_literal: bool = False, case_insensitive: bool = False) -> bool:
+        """
+        Equality checks work slightly differently for clinical datasets. See truth table below:
+        Operator       --A         --B         Outcome
+        not_equal_to   "" or null  "" or null  False
+        not_equal_to   "" or null  Populated   True
+        not_equal_to   Populated   "" or null  True
+        not_equal_to   Populated   Populated   A != B
+        """
+        comparison_data = comparator if comparator not in row or value_is_literal else row[comparator]
+        both_null = (comparison_data == "" or comparison_data is None) & (row[target] == "" or row[target] is None)
+        if both_null:
+            return False
+        if case_insensitive:
+            target_val = row[target].lower() if row[target] else None
+            comparison_val = comparison_data.lower() if comparison_data else None
+            return target_val != comparison_val
+        return row[target] != comparison_data
+
     @type_operator(FIELD_DATAFRAME)
     def equal_to(self, other_value) -> pd.Series:
         target = self.replace_prefix(other_value.get("target"))
         value_is_literal = other_value.get("value_is_literal", False)
         comparator = self.replace_prefix(other_value.get("comparator")) if not value_is_literal else other_value.get("comparator")
-        comparison_data = self.get_comparator_data(comparator, value_is_literal)
-        return self.value[target].eq(comparison_data) & ~self.value[target].isin(["", None])
+        return self.value.apply(lambda row: self._check_equality(row, target, comparator, value_is_literal), axis=1)
 
     @type_operator(FIELD_DATAFRAME)
     def equal_to_case_insensitive(self, other_value):
         target = self.replace_prefix(other_value.get("target"))
         value_is_literal = other_value.get("value_is_literal", False)
         comparator = self.replace_prefix(other_value.get("comparator")) if not value_is_literal else other_value.get("comparator")
-        comparison_data = self.get_comparator_data(comparator, value_is_literal)
-        comparison_data = self.convert_string_data_to_lower(comparison_data)
-        return (self.value[target].str.lower() == comparison_data) & ~self.value[target].isin(["", None])
+        return self.value.apply(lambda row: self._check_equality(row, target, comparator, value_is_literal, case_insensitive=True), axis=1)
 
     @type_operator(FIELD_DATAFRAME)
     def not_equal_to_case_insensitive(self, other_value):
-        return ~self.equal_to_case_insensitive(other_value)
+        target = self.replace_prefix(other_value.get("target"))
+        value_is_literal = other_value.get("value_is_literal", False)
+        comparator = self.replace_prefix(other_value.get("comparator")) if not value_is_literal else other_value.get("comparator")
+        return self.value.apply(lambda row: self._check_inequality(row, target, comparator, value_is_literal, case_insensitive=True), axis=1)
 
     @type_operator(FIELD_DATAFRAME)
     def not_equal_to(self, other_value):
-        return ~self.equal_to(other_value)
+        target = self.replace_prefix(other_value.get("target"))
+        value_is_literal = other_value.get("value_is_literal", False)
+        comparator = self.replace_prefix(other_value.get("comparator")) if not value_is_literal else other_value.get("comparator")
+        return self.value.apply(lambda row: self._check_inequality(row, target, comparator, value_is_literal), axis=1)
 
     @type_operator(FIELD_DATAFRAME)
     def suffix_equal_to(self, other_value: dict) -> pd.Series:
@@ -375,6 +417,60 @@ class DataframeType(BaseType):
         """
         return ~self.prefix_equal_to(other_value)
 
+    @type_operator(FIELD_DATAFRAME)
+    def prefix_is_contained_by(self, other_value: dict) -> pd.Series:
+        """
+        Checks if target prefix is contained by the comparator.
+        """
+        target: str = self.replace_prefix(other_value.get("target"))
+        value_is_literal: bool = other_value.get("value_is_literal", False)
+        comparator: Union[str, Any] = self.replace_prefix(other_value.get("comparator")) if not value_is_literal else other_value.get("comparator")
+        comparison_data: Union[str, pd.Series] = self.get_comparator_data(comparator, value_is_literal)
+        prefix_length: int = other_value.get("prefix")
+        series_to_validate: pd.Series = self._get_string_part_series("prefix", prefix_length, target)
+        return self._value_is_contained_by(series_to_validate, comparison_data)
+   
+    @type_operator(FIELD_DATAFRAME)
+    def prefix_is_not_contained_by(self, other_value: dict) -> pd.Series:
+        return ~self.prefix_is_contained_by(other_value)
+
+    @type_operator(FIELD_DATAFRAME)
+    def suffix_is_contained_by(self, other_value: dict) -> pd.Series:
+        """
+        Checks if target prefix is equal to comparator.
+        """
+        target: str = self.replace_prefix(other_value.get("target"))
+        value_is_literal: bool = other_value.get("value_is_literal", False)
+        comparator: Union[str, Any] = self.replace_prefix(other_value.get("comparator")) if not value_is_literal else other_value.get("comparator")
+        comparison_data: Union[str, pd.Series] = self.get_comparator_data(comparator, value_is_literal)
+        suffix_length: int = other_value.get("suffix")
+        series_to_validate: pd.Series = self._get_string_part_series("suffix", suffix_length, target)
+        return self._value_is_contained_by(series_to_validate, comparison_data)
+
+    @type_operator(FIELD_DATAFRAME)
+    def suffix_is_not_contained_by(self, other_value: dict) -> pd.Series:
+        return ~self.suffix_is_contained_by(other_value)
+    
+    def _get_string_part_series(self, part_to_validate: str, length: int, target: str):
+        if not self.value[target].apply(type).eq(str).all():
+            raise ValueError("The operator can't be used with non-string values")
+
+        if part_to_validate == "suffix":
+            series_to_validate: pd.Series = self.value[target].str.slice(-length)
+        elif part_to_validate == "prefix":
+            series_to_validate: pd.Series = self.value[target].str.slice(stop=length)
+        else:
+            raise ValueError(f"Invalid part to validate: {part_to_validate}. Valid values are: suffix, prefix")
+
+        return series_to_validate
+
+    def _value_is_contained_by(self, series: pd.Series, comparison_data) -> pd.Series:
+        if self.is_column_of_iterables(comparison_data):
+            results = vectorized_is_in(series, comparison_data)
+        else:
+            results = series.isin(comparison_data)
+        return pd.Series(results)
+
     def _check_equality_of_string_part(
         self,
         target: str,
@@ -385,17 +481,7 @@ class DataframeType(BaseType):
         """
         Checks if the given string part is equal to comparison data.
         """
-        if not self.value[target].apply(type).eq(str).all():
-            raise ValueError("The operator can't be used with non-string values")
-
-        # compare
-        if part_to_validate == "suffix":
-            series_to_validate: pd.Series = self.value[target].str.slice(-length)
-        elif part_to_validate == "prefix":
-            series_to_validate: pd.Series = self.value[target].str.slice(start=0, step=length + 1)
-        else:
-            raise ValueError(f"Invalid part to validate: {part_to_validate}. Valid values are: suffix, prefix")
-
+        series_to_validate = self._get_string_part_series(part_to_validate, length, target)
         return series_to_validate.eq(comparison_data)
 
     @type_operator(FIELD_DATAFRAME)
@@ -440,11 +526,12 @@ class DataframeType(BaseType):
         value_is_literal = other_value.get("value_is_literal", False)
         comparator = self.replace_prefix(other_value.get("comparator")) if not value_is_literal else other_value.get("comparator")
         comparison_data = self.get_comparator_data(comparator, value_is_literal)
-        if self.is_column_of_iterables(self.value[target]):
+        if self.is_column_of_iterables(self.value[target]) or isinstance(comparison_data, str):
             results = vectorized_is_in(comparison_data, self.value[target])
         elif isinstance(comparator, pandas.core.series.Series):
             results = np.where(comparison_data.isin(self.value[target]), True, False)
         else:
+            # Handles numeric case. This case should never occur
             results = np.where(self.value[target] == comparison_data, True, False)
         return pd.Series(results)
     
@@ -461,10 +548,10 @@ class DataframeType(BaseType):
         comparison_data = self.convert_string_data_to_lower(comparison_data)
         if self.is_column_of_iterables(self.value[target]):
             results = vectorized_case_insensitive_is_in(comparison_data, self.value[target])
-        elif isinstance(comparator, pandas.core.series.Series):
+        elif isinstance(comparator, pandas.core.series.Series) or isinstance(comparison_data, pandas.core.series.Series):
             results = np.where(comparison_data.isin(self.value[target].str.lower()), True, False)
         else:
-            results = np.where(self.value[target].str.lower() == comparison_data, True, False)
+            results = vectorized_is_in(comparison_data.lower(), self.value[target].str.lower())
         return pd.Series(results)
 
     @type_operator(FIELD_DATAFRAME)
@@ -548,6 +635,32 @@ class DataframeType(BaseType):
     @type_operator(FIELD_DATAFRAME)
     def not_matches_regex(self, other_value):
         return ~self.matches_regex(other_value)
+
+    @type_operator(FIELD_DATAFRAME)
+    def equals_string_part(self, other_value):
+        """
+        Checks that the values in the target column
+        equal the result of parsing the value in the comparison
+        column with a regex
+        """
+        target = self.replace_prefix(other_value.get("target"))
+        comparator = other_value.get("comparator")
+        regex = other_value.get("regex")
+        value_is_literal: bool = other_value.get("value_is_literal", False)
+        comparison_data: Union[str, pd.Series] = self.get_comparator_data(comparator, value_is_literal)
+        if isinstance(comparison_data, str):
+            parsed_data = apply_regex(regex, comparison_data)
+        else:
+            parsed_data = pd.Series(vectorized_apply_regex(regex, comparison_data))
+        print(parsed_data)
+        parsed_id = str(uuid4())
+        self.value[parsed_id] = parsed_data
+        return self.value.apply(lambda row: self._check_equality(row, target, parsed_id, value_is_literal), axis=1)
+
+    @type_operator(FIELD_DATAFRAME)
+    def does_not_equal_string_part(self, other_value):
+        return ~self.equals_string_part(other_value)
+
      
     @type_operator(FIELD_DATAFRAME)
     def starts_with(self, other_value):
