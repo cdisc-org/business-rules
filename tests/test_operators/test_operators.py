@@ -4,7 +4,7 @@ from business_rules.operators import (DataframeType, StringType,
                                       NumericType, BooleanType, SelectType,
                                       SelectMultipleType, GenericType)
 
-from . import TestCase
+from .. import TestCase
 from decimal import Decimal
 import sys
 import pandas
