@@ -1,6 +1,6 @@
 from business_rules.operators import DataframeType
 import pandas
-from .. import TestCase
+from . import TestCase
 
 
 class IsUniqueSetTests(TestCase):
