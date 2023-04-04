@@ -490,7 +490,10 @@ class DataframeType(BaseType):
         value_is_literal = other_value.get("value_is_literal", False)
         comparator = self.replace_prefix(other_value.get("comparator")) if not value_is_literal else other_value.get("comparator")
         comparison_data = self.get_comparator_data(comparator, value_is_literal)
-        results = np.where(self.value[target] < comparison_data, True, False)
+        target_column = pd.to_numeric(self.value[target], errors="coerce")
+        if isinstance(comparison_data, pd.Series):
+            comparison_data = pd.to_numeric(comparison_data, errors="coerce")
+        results = np.where(target_column < comparison_data, True, False)
         return pd.Series(results)
     
     @type_operator(FIELD_DATAFRAME)
@@ -499,7 +502,10 @@ class DataframeType(BaseType):
         value_is_literal = other_value.get("value_is_literal", False)
         comparator = self.replace_prefix(other_value.get("comparator")) if not value_is_literal else other_value.get("comparator")
         comparison_data = self.get_comparator_data(comparator, value_is_literal)
-        results = np.where(self.value[target] <= comparison_data, True, False)
+        target_column = pd.to_numeric(self.value[target], errors="coerce")
+        if isinstance(comparison_data, pd.Series):
+            comparison_data = pd.to_numeric(comparison_data, errors="coerce")
+        results = np.where(target_column <= comparison_data, True, False)
         return pd.Series(results)
     
     @type_operator(FIELD_DATAFRAME)
@@ -508,7 +514,10 @@ class DataframeType(BaseType):
         value_is_literal = other_value.get("value_is_literal", False)
         comparator = self.replace_prefix(other_value.get("comparator")) if not value_is_literal else other_value.get("comparator")
         comparison_data = self.get_comparator_data(comparator, value_is_literal)
-        results = np.where(self.value[target] >= comparison_data, True, False)
+        target_column = pd.to_numeric(self.value[target], errors="coerce")
+        if isinstance(comparison_data, pd.Series):
+            comparison_data = pd.to_numeric(comparison_data, errors="coerce")
+        results = np.where(target_column >= comparison_data, True, False)
         return pd.Series(results)
     
     @type_operator(FIELD_DATAFRAME)
@@ -517,7 +526,10 @@ class DataframeType(BaseType):
         value_is_literal = other_value.get("value_is_literal", False)
         comparator = self.replace_prefix(other_value.get("comparator")) if not value_is_literal else other_value.get("comparator")
         comparison_data = self.get_comparator_data(comparator, value_is_literal)
-        results = np.where(self.value[target] > comparison_data, True, False)
+        target_column = pd.to_numeric(self.value[target], errors="coerce")
+        if isinstance(comparison_data, pd.Series):
+            comparison_data = pd.to_numeric(comparison_data, errors="coerce")
+        results = np.where(target_column > comparison_data, True, False)
         return pd.Series(results)
 
     @type_operator(FIELD_DATAFRAME)
