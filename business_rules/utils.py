@@ -6,6 +6,8 @@ import numpy as np
 from dateutil.parser import parse, isoparse
 import pytz
 
+date_regex = re.compile(r'^((-?(?:[1-9][0-9]*)?[0-9]{4})(-(1[0-2]|0[1-9])(-(3[01]|0[1-9]|[12][0-9])(T(2[0-3]|[01][0-9])(:([0-5][0-9])((:([0-5][0-9]))?(\.[0-9]+)?((Z|[+-](:2[0-3]|[01][0-9]):[0-5][0-9]))?)?)?)?)?)?)$')
+
 def fn_name_to_pretty_label(name):
     return ' '.join([w.title() for w in name.split('_')])
 
@@ -50,7 +52,7 @@ def is_valid_date(date_string: str) -> bool:
         isoparse(date_string)
     except:
         return False
-    return True
+    return date_regex.match(date_string) is not None
 
 def get_year(date_string: str):
     timestamp = get_date(date_string)
