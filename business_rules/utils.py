@@ -6,7 +6,7 @@ import numpy as np
 from dateutil.parser import parse, isoparse
 import pytz
 
-date_regex = re.compile(r'^((-?(?:[1-9][0-9]*)?[0-9]{4})(-(1[0-2]|0[1-9])(-(3[01]|0[1-9]|[12][0-9])(T(2[0-3]|[01][0-9])(:([0-5][0-9])((:([0-5][0-9]))?(\.[0-9]+)?((Z|[+-](:2[0-3]|[01][0-9]):[0-5][0-9]))?)?)?)?)?)?)$')
+date_regex = re.compile(r'^((-?[0-9]{4}|-)(-(1[0-2]|0[1-9]|-)(-(3[01]|0[1-9]|[12][0-9]|-)(T(2[0-3]|[01][0-9]|-)(:([0-5][0-9]|-)((:([0-5][0-9]|-))?(\.[0-9]+)?((Z|[+-](:2[0-3]|[01][0-9]):[0-5][0-9]))?)?)?)?)?)?)(\/((-?[0-9]{4}|-)(-(1[0-2]|0[1-9]|-)(-(3[01]|0[1-9]|[12][0-9]|-)(T(2[0-3]|[01][0-9]|-)(:([0-5][0-9]|-)((:([0-5][0-9]|-))?(\.[0-9]+)?((Z|[+-](:2[0-3]|[01][0-9]):[0-5][0-9]))?)?)?)?)?)?))?$')
 
 def fn_name_to_pretty_label(name):
     return ' '.join([w.title() for w in name.split('_')])
@@ -51,7 +51,13 @@ def is_valid_date(date_string: str) -> bool:
     try:
         isoparse(date_string)
     except:
-        return False
+        uncertainty_substrings = ["/", "--", "-:"]
+        if any([substr in date_string for substr in uncertainty_substrings]):
+            # date_string contains uncertainty
+            # will not parse with isoparse
+            return date_regex.match(date_string) is not None
+        else:
+            return False
     return date_regex.match(date_string) is not None
 
 def get_year(date_string: str):
