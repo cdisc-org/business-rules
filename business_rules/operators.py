@@ -1,6 +1,7 @@
 import inspect
 import re
 from functools import wraps
+import types
 from typing import Union, Any, List, Tuple
 from uuid import uuid4
 import pandas
@@ -10,7 +11,7 @@ from .six import string_types, integer_types
 
 from .fields import (FIELD_DATAFRAME, FIELD_TEXT, FIELD_NUMERIC, FIELD_NO_INPUT,
                      FIELD_SELECT, FIELD_SELECT_MULTIPLE)
-from .utils import fn_name_to_pretty_label, float_to_decimal, vectorized_is_valid, vectorized_compare_dates, \
+from .utils import flatten_list, fn_name_to_pretty_label, float_to_decimal, vectorized_is_valid, vectorized_compare_dates, \
     vectorized_is_complete_date, vectorized_len, vectorized_get_dict_key, vectorized_is_in, vectorized_case_insensitive_is_in, \
     vectorized_apply_regex, apply_regex
 from decimal import Decimal, Inexact, Context
@@ -858,12 +859,9 @@ class DataframeType(BaseType):
     @type_operator(FIELD_DATAFRAME)
     def is_unique_set(self, other_value):
         target = self.replace_prefix(other_value.get("target"))
-        value = other_value.get("comparator")
-        if isinstance(value, list):
-            value.append(target)
-            target_data = value
-        else:
-            target_data = [value, target]
+        comparator = other_value.get("comparator")
+        values = [target, comparator]
+        target_data = flatten_list(values)
         target_names = []
         for target_name in target_data:
             target_name = self.replace_prefix(target_name)
