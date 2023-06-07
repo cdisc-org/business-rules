@@ -20,7 +20,7 @@ class IsUniqueSetTests(TestCase):
             )
         )
         self.assertTrue(
-            df_type.is_unique_set({"target": "ARM", "comparator": ["LAE"]}).equals(
+            df_type.is_unique_set({"target": "ARM", "comparator": ["ARF"]}).equals(
                 pandas.Series([True, True, True, True])
             )
         )
@@ -33,6 +33,21 @@ class IsUniqueSetTests(TestCase):
             df_type.is_unique_set(
                 {"target": "ARM", "comparator": ["TAE", "NOT_IN_DS"]}
             ).equals(pandas.Series([False, False, True, True]))
+        )
+        self.assertTrue(
+            df_type.is_unique_set(
+                {"target": "ARM", "comparator": ["TAE", ["NOT_IN_DS"]]}
+            ).equals(pandas.Series([False, False, True, True]))
+        )
+        self.assertTrue(
+            df_type.is_unique_set(
+                {"target": "ARM", "comparator": ["TAE", ["LAE"]]}
+            ).equals(pandas.Series([True, True, True, True]))
+        )
+        self.assertTrue(
+            df_type.is_unique_set(
+                {"target": "ARM", "comparator": [["LAE", "TAE"]]}
+            ).equals(pandas.Series([True, True, True, True]))
         )
         self.assertTrue(
             df_type.is_unique_set({"target": "ARM", "comparator": "TAE"}).equals(
@@ -68,7 +83,7 @@ class IsUniqueSetTests(TestCase):
             )
         )
         self.assertTrue(
-            df_type.is_not_unique_set({"target": "ARM", "comparator": ["LAE"]}).equals(
+            df_type.is_not_unique_set({"target": "ARM", "comparator": ["ARF"]}).equals(
                 pandas.Series([False, False, False, False])
             )
         )
@@ -81,6 +96,26 @@ class IsUniqueSetTests(TestCase):
             df_type.is_not_unique_set(
                 {"target": "ARM", "comparator": ["TAE", "NOT_IN_DS"]}
             ).equals(pandas.Series([True, True, False, False]))
+        )
+        self.assertTrue(
+            df_type.is_not_unique_set(
+                {"target": "ARM", "comparator": ["TAE", ["NOT_IN_DS"]]}
+            ).equals(pandas.Series([True, True, False, False]))
+        )
+        self.assertTrue(
+            df_type.is_not_unique_set(
+                {"target": "ARM", "comparator": ["TAE", ["NOT_IN_DS", "LAE"]]}
+            ).equals(pandas.Series([False, False, False, False]))
+        )
+        self.assertTrue(
+            df_type.is_not_unique_set(
+                {"target": "ARM", "comparator": ["TAE", ["LAE"]]}
+            ).equals(pandas.Series([False, False, False, False]))
+        )
+        self.assertTrue(
+            df_type.is_not_unique_set(
+                {"target": "ARM", "comparator": [["TAE", "LAE"]]}
+            ).equals(pandas.Series([False, False, False, False]))
         )
         self.assertTrue(
             df_type.is_not_unique_set({"target": "ARM", "comparator": "TAE"}).equals(
