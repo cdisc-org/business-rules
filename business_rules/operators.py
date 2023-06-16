@@ -860,13 +860,14 @@ class DataframeType(BaseType):
         target = self.replace_prefix(other_value.get("target"))
         comparator = other_value.get("comparator")
         values = [target, comparator]
-        target_data = flatten_list(values)
+        target_data = flatten_list(self.value, values)
         target_names = []
         for target_name in target_data:
             target_name = self.replace_prefix(target_name)
             if target_name in self.value.columns:
                 target_names.append(target_name)
-        counts = self.value[target_names].groupby(target_names)[target].transform('size')
+        target_names = list(set(target_names))
+        counts = self.value[target_names].groupby(target_names)[target].transform('size') 
         results = np.where(counts <= 1, True, False)
         return pd.Series(results)
 
