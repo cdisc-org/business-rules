@@ -149,13 +149,15 @@ def apply_regex(regex: str, val: str):
         return result[0]
     else:
         return None
-    
-def flatten_list(l):
-    for item in l:
-        if isinstance(item, list):
-            yield from flatten_list(item)
-        else:
-            yield item
+def flatten_list(data, l):
+   for item in l:
+       if isinstance(item, list):
+           yield from flatten_list(data, item)
+       elif item in data and isinstance(data[item].iloc[0], list):
+           for val in data[item].iloc[0]:
+               yield val
+       else:
+           yield item
 
 vectorized_apply_regex = np.vectorize(apply_regex)
 vectorized_is_complete_date = np.vectorize(is_complete_date)
