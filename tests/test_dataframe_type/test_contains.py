@@ -160,3 +160,49 @@ class ContainsTests(TestCase):
             "target": "var4",
             "comparator": "var2"
         }).equals(pandas.Series([False, True, True])))
+
+    def test_contains_all(self):
+        df = pandas.DataFrame.from_dict(
+            {
+                "var1": ['test', 'value', 'word'],
+                "var2": ["test", "value", "test"],
+                "variable_names": ["STUDYID", "USUBJID", "COOLVAR"],
+                "required_variables": [["STUDYID", "USUBJID"], ["STUDYID", "USUBJID"], ["STUDYID", "USUBJID"]]
+            }
+        )
+        self.assertTrue(DataframeType({"value": df}).contains_all({
+            "target": "var1",
+            "comparator": "var2",
+        }))
+        self.assertTrue(DataframeType({"value": df, "column_prefix_map": {"--": "va"}}).contains_all({
+            "target": "--r1",
+            "comparator": "--r2",
+        }))
+        self.assertFalse(DataframeType({"value": df}).contains_all({
+            "target": "var2",
+            "comparator": "var1",
+        }))
+        self.assertTrue(DataframeType({"value": df}).contains_all({
+            "target": "var2",
+            "comparator": ["test", "value"],
+        }))
+
+        self.assertTrue(DataframeType({"value": df}).contains_all({
+            "target": "variable_names",
+            "comparator": ["required_variables"]
+        }))
+
+    def test_not_contains_all(self):
+        df = pandas.DataFrame.from_dict(
+            {
+                "var1": ['test', 'value', 'word'],
+                "var2": ["test", "value", "test"],
+                "variable_names": ["STUDYID", "USUBJID", "COOLVAR"],
+                "required_variables": [["STUDYID", "USUBJID", "TEST"], ["STUDYID", "USUBJID", "TEST"], ["STUDYID", "USUBJID", "TEST"]]
+            }
+        )
+        
+        self.assertTrue(DataframeType({"value": df}).not_contains_all({
+            "target": "variable_names",
+            "comparator": ["required_variables"]
+        }))

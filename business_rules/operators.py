@@ -4,6 +4,7 @@ from functools import wraps
 from typing import Union, Any, List, Tuple
 from uuid import uuid4
 import pandas
+from pandas.api.types import is_integer_dtype
 import sys
 
 from .six import string_types, integer_types
@@ -710,7 +711,10 @@ class DataframeType(BaseType):
         value_is_literal: bool = other_value.get("value_is_literal", False)
         comparison_data: Union[int, pd.Series] = self.get_comparator_data(comparator, value_is_literal)
         if isinstance(comparison_data, pd.Series):
-            results = self.value[target].str.len().eq(comparison_data.str.len())
+            if is_integer_dtype(comparison_data):
+                results = self.value[target].str.len().eq(comparison_data)
+            else:
+                results = self.value[target].str.len().eq(comparison_data.str.len())
         else:
             results = self.value[target].str.len().eq(comparator)
         return pd.Series(results)
@@ -731,7 +735,10 @@ class DataframeType(BaseType):
         value_is_literal: bool = other_value.get("value_is_literal", False)
         comparison_data: Union[int, pd.Series] = self.get_comparator_data(comparator, value_is_literal)
         if isinstance(comparison_data, pd.Series):
-            results = self.value[target].str.len().gt(comparison_data.str.len())
+            if is_integer_dtype(comparison_data):
+                results = self.value[target].str.len().gt(comparison_data)
+            else:
+                results = self.value[target].str.len().gt(comparison_data.str.len())
         else:
             results = self.value[target].str.len().gt(comparison_data)
         return pd.Series(results.values)
@@ -743,7 +750,10 @@ class DataframeType(BaseType):
         value_is_literal: bool = other_value.get("value_is_literal", False)
         comparison_data: Union[int, pd.Series] = self.get_comparator_data(comparator, value_is_literal)
         if isinstance(comparison_data, pd.Series):
-            results = self.value[target].str.len().ge(comparison_data.str.len())
+            if is_integer_dtype(comparison_data):
+                results = self.value[target].str.len().ge(comparison_data)
+            else:
+                results = self.value[target].str.len().ge(comparison_data.str.len())
         else:
             results = self.value[target].str.len().ge(comparator)
         return pd.Series(results.values)
@@ -796,7 +806,7 @@ class DataframeType(BaseType):
         comparator = other_value.get("comparator")
         if isinstance(comparator, list):
             # get column as array of values
-            values = comparator
+            values = flatten_list(self.value, comparator)
         else:
             comparator = self.replace_prefix(comparator)
             values = self.value[comparator].unique()
