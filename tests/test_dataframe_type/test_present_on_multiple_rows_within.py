@@ -55,6 +55,13 @@ class PresentOnMultipleRowsWithin(TestCase):
         )
         self.assertTrue(result.equals(pandas.Series([True, True, False, True, True, False, False, False, False])))
 
+        # Comparator determines the max number of rows with the same value before an error is flagged.
+        # In this case, comparator: 5 means that if a value is present on more than 5 rows within the grouping target an error should be raised. Since no values appear more than 5 times within a USUBJID no error should be raised.
+        result = DataframeType({"value": df}).present_on_multiple_rows_within(
+                {"target": "DSDECOD", "within": "USUBJID", "comparator": 5}
+        )
+        self.assertTrue(result.equals(pandas.Series([False, False, False, False, False, False, False, False, False])))
+
     def test_not_present_on_multiple_rows_within(self):
         """
         Unit test for not_present_on_multiple_rows_within operator.
