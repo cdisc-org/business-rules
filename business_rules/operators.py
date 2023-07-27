@@ -1046,14 +1046,12 @@ class DataframeType(BaseType):
         min_count: int = other_value.get("comparator") or 1
         group_by_column = self.replace_prefix(other_value.get("within"))
         grouped = self.value.groupby(group_by_column)
-        results = grouped.apply(lambda x: self.validate_series_length(x[target], min_count))
-        return pd.Series(results.explode().tolist())
+        results = grouped.apply(lambda x: self.validate_series_length(x, target, min_count))
+        return pd.Series(results.sort_index(level=1).tolist())
 
-    def validate_series_length(self, ser: pd.Series, min_length: int):
-        if len(ser) > min_length:
-            return [True] * len(ser)
-        else:
-            return [False] * min_length
+    def validate_series_length(self, data: pd.DataFrame, target: str, min_length: int):
+        value_counts = data[target].value_counts().to_dict()
+        return data[target].apply(lambda x: value_counts.get(x, 0) > min_length)
 
     @type_operator(FIELD_DATAFRAME)
     def not_present_on_multiple_rows_within(self, other_value: dict):
