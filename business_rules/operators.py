@@ -639,7 +639,6 @@ class DataframeType(BaseType):
         self.value[target] = self.value[target].apply(lambda x: self._custom_str_conversion(x))
         results = self.value[target].notna() & ~self.value[target].astype(str).map(lambda x: re.search(comparator, x[:prefix]) is not None)
         return pd.Series(results.values)
-        #return ~self.prefix_matches_regex(other_value)
   
     @type_operator(FIELD_DATAFRAME)
     def suffix_matches_regex(self, other_value):

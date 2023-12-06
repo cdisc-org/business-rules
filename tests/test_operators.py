@@ -513,7 +513,9 @@ class DataframeOperatorTests(TestCase):
         df = pandas.DataFrame.from_dict({
             "var1": ["WORD", "test"],
             "var2": ["word", "TEST"],
-            "var3": ["another", "item"]
+            "var3": ["another", "item"],
+            "var4": [224, None],
+            "var5": [-25, 3.14]
         })
         self.assertTrue(DataframeType({"value": df, "column_prefix_map": {"--": "va"}}).prefix_matches_regex({
             "target": "--r2",
@@ -525,12 +527,24 @@ class DataframeOperatorTests(TestCase):
             "comparator": "[0-9].*",
             "prefix": 2
         }).equals(pandas.Series([False, False])))
+        self.assertTrue(DataframeType({"value": df}).prefix_matches_regex({
+            "target": "var4",
+            "comparator": "^[1-9]{1}\d*$",
+            "prefix": 2
+        }).equals(pandas.Series([True, False])))
+        self.assertTrue(DataframeType({"value": df}).prefix_matches_regex({
+            "target": "var5",
+            "comparator": "^[1-9]{1}\d*$",
+            "prefix": 2
+        }).equals(pandas.Series([False, False])))
 
     def test_suffix_matches_regex(self):
         df = pandas.DataFrame.from_dict({
             "var1": ["WORD", "test"],
             "var2": ["word", "TEST"],
-            "var3": ["another", "item"]
+            "var3": ["another", "item"],
+            "var4": [224, None],
+            "var5": [-25, 3.14]
         })
         self.assertTrue(DataframeType({"value": df, "column_prefix_map": {"--": "va"}}).suffix_matches_regex({
             "target": "--r1",
@@ -542,12 +556,24 @@ class DataframeOperatorTests(TestCase):
             "comparator": "[0-9].*",
             "suffix": 3
         }).equals(pandas.Series([False, False])))
+        self.assertTrue(DataframeType({"value": df}).suffix_matches_regex({
+            "target": "var4",
+            "comparator": "[1-9]{1}\d*",
+            "suffix": 2
+        }).equals(pandas.Series([True, False])))
+        self.assertTrue(DataframeType({"value": df}).suffix_matches_regex({
+            "target": "var5",
+            "comparator": "[1-9]{1}\d*",
+            "suffix": 2
+        }).equals(pandas.Series([True, True])))
 
     def test_not_prefix_matches_suffix(self):
         df = pandas.DataFrame.from_dict({
             "var1": ["WORD", "test"],
             "var2": ["word", "TEST"],
-            "var3": ["another", "item"]
+            "var3": ["another", "item"],
+            "var4": [224, None],
+            "var5": [-25, 3.14]
         })
         self.assertTrue(DataframeType({"value": df, "column_prefix_map": {"--": "va"}}).not_prefix_matches_regex({
             "target": "--r1",
@@ -559,12 +585,24 @@ class DataframeOperatorTests(TestCase):
             "comparator": "[0-9].*",
             "prefix": 2
         }).equals(pandas.Series([True, True])))
+        self.assertTrue(DataframeType({"value": df}).not_prefix_matches_regex({
+            "target": "var4",
+            "comparator": "^[1-9]{1}\d*$",
+            "prefix": 2
+        }).equals(pandas.Series([False, False])))
+        self.assertTrue(DataframeType({"value": df}).not_prefix_matches_regex({
+            "target": "var5",
+            "comparator": "^[1-9]{1}\d*$",
+            "prefix": 2
+        }).equals(pandas.Series([True, True])))
 
     def test_not_suffix_matches_regex(self):
         df = pandas.DataFrame.from_dict({
             "var1": ["WORD", "test"],
             "var2": ["word", "TEST"],
-            "var3": ["another", "item"]
+            "var3": ["another", "item"],
+            "var4": [224, None],
+            "var5": [-25, 3.14]
         })
         self.assertTrue(DataframeType({"value": df}).not_suffix_matches_regex({
             "target": "var1",
@@ -576,12 +614,24 @@ class DataframeOperatorTests(TestCase):
             "comparator": "[0-9].*",
             "suffix": 3
         }).equals(pandas.Series([True, True])))
+        self.assertTrue(DataframeType({"value": df}).not_suffix_matches_regex({
+            "target": "var4",
+            "comparator": "[1-9]{1}\d*",
+            "suffix": 2
+        }).equals(pandas.Series([False, False])))
+        self.assertTrue(DataframeType({"value": df}).not_suffix_matches_regex({
+            "target": "var5",
+            "comparator": "[1-9]{1}\d*",
+            "suffix": 2
+        }).equals(pandas.Series([False, False])))
 
-    def test_matches_suffix(self):
+    def test_matches_regex(self):
         df = pandas.DataFrame.from_dict({
             "var1": ["WORD", "test"],
             "var2": ["word", "TEST"],
-            "var3": ["another", "item"]
+            "var3": ["another", "item"],
+            "var4": [224, None],
+            "var5": [-25, 3.14]
         })
         self.assertTrue(DataframeType({"value": df, "column_prefix_map": {"--": "va"}}).matches_regex({
             "target": "--r1",
@@ -591,12 +641,22 @@ class DataframeOperatorTests(TestCase):
             "target": "var2",
             "comparator": "[0-9].*",
         }).equals(pandas.Series([False, False])))
+        self.assertTrue(DataframeType({"value": df}).matches_regex({
+            "target": "var4",
+            "comparator": "^-?[1-9]{1}\d*$",
+        }).equals(pandas.Series([True, False])))
+        self.assertTrue(DataframeType({"value": df}).matches_regex({
+            "target": "var5",
+            "comparator": "^-?[1-9]{1}\d*$",
+        }).equals(pandas.Series([True, False])))
 
     def test_not_matches_regex(self):
         df = pandas.DataFrame.from_dict({
             "var1": ["WORD", "test"],
             "var2": ["word", "TEST"],
-            "var3": ["another", "item"]
+            "var3": ["another", "item"],
+            "var4": [224, None],
+            "var5": [-25, 3.14]
         })
         self.assertTrue(DataframeType({"value": df}).not_matches_regex({
             "target": "var1",
@@ -606,6 +666,14 @@ class DataframeOperatorTests(TestCase):
             "target": "--r1",
             "comparator": "[0-9].*",
         }).equals(pandas.Series([True, True])))
+        self.assertTrue(DataframeType({"value": df}).not_matches_regex({
+            "target": "var4",
+            "comparator": "^-?[1-9]{1}\d*$",
+        }).equals(pandas.Series([False, False])))
+        self.assertTrue(DataframeType({"value": df}).not_matches_regex({
+            "target": "var5",
+            "comparator": "^-?[1-9]{1}\d*$",
+        }).equals(pandas.Series([False, True])))
 
     def test_starts_with(self):
         df = pandas.DataFrame.from_dict({
