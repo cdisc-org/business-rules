@@ -1055,33 +1055,51 @@ class DataframeOperatorTests(TestCase):
         )
 
     def test_empty_within_except_last_row(self):
-        df = pandas.DataFrame.from_dict(
+        valid_df = pandas.DataFrame.from_dict(
             {
-                "USUBJID": [1, 1, 1, 2, 2, 2],
-                "valid": ["2020-10-10", "2020-10-10", "2020-10-10", "2021", "2021", "2021", ],
-                "invalid": ["2020-10-10", None, None, "2020", "2020", None, ],
+                "USUBJID": [789, 789, 789, 789, 790, 790, 790, 790, ],
+                "SESEQ": [1, 2, 3, 4, 5, 6, 7, 8, ],
+                "SEENDTC": ["2006-06-03T10:32", "2006-06-10T09:47", "2006-06-17", "", "2006-06-03T10:14", "2006-06-10T10:32", "2006-06-17", "2006-06-17"],
+                "SESTDTC": ["2006-06-01", "2006-06-03T10:32", "2006-06-10T09:47", "2006-06-17", "2006-06-01", "2006-06-03T10:14", "2006-06-10T10:32", "2006-06-17"],
+            }
+        )
+        invalid_df = pandas.DataFrame.from_dict(
+            {
+                "USUBJID": [789, 789, 789, 789, 790, 790, 790, 790, ],
+                "SESEQ": [1, 2, 3, 4, 5, 6, 7, 8, ],
+                "SEENDTC": ["", "2006-06-10T09:47", "2006-06-17", "", "2006-06-03T10:14", "2006-06-10T10:32", "2006-06-17", "2006-06-17"],
+                "SESTDTC": ["2006-06-01", "2006-06-03T10:32", "2006-06-10T09:47", "2006-06-17", "2006-06-01", "2006-06-03T10:14", "2006-06-10T10:32", "2006-06-17"],
             }
         )
         self.assertFalse(
-            DataframeType({"value": df}).empty_within_except_last_row({"target": "valid", "comparator": "USUBJID"})
+            DataframeType({"value": valid_df}).empty_within_except_last_row({"target": "SEENDTC", "ordering": "SESTDTC", "comparator": "USUBJID"})
         )
         self.assertTrue(
-            DataframeType({"value": df}).empty_within_except_last_row({"target": "invalid", "comparator": "USUBJID"})
+            DataframeType({"value": invalid_df}).empty_within_except_last_row({"target": "SEENDTC", "ordering": "SESTDTC", "comparator": "USUBJID"})
         )
-
+        
     def test_non_empty_within_except_last_row(self):
-        df = pandas.DataFrame.from_dict(
+        valid_df = pandas.DataFrame.from_dict(
             {
-                "USUBJID": [1, 1, 1, 2, 2, 2],
-                "valid": ["2020-10-10", "2020-10-10", "2020-10-10", "2021", "2021", "2021", ],
-                "invalid": ["2020-10-10", None, None, "2020", "2020", None, ],
+                "USUBJID": [789, 789, 789, 789, 790, 790, 790, 790, ],
+                "SESEQ": [1, 2, 3, 4, 5, 6, 7, 8, ],
+                "SEENDTC": ["2006-06-03T10:32", "2006-06-10T09:47", "2006-06-17", "", "2006-06-03T10:14", "2006-06-10T10:32", "2006-06-17", "2006-06-17"],
+                "SESTDTC": ["2006-06-01", "2006-06-03T10:32", "2006-06-10T09:47", "2006-06-17", "2006-06-01", "2006-06-03T10:14", "2006-06-10T10:32", "2006-06-17"],
+            }
+        )
+        invalid_df = pandas.DataFrame.from_dict(
+            {
+                "USUBJID": [789, 789, 789, 789, 790, 790, 790, 790, ],
+                "SESEQ": [1, 2, 3, 4, 5, 6, 7, 8, ],
+                "SEENDTC": ["", "2006-06-10T09:47", "2006-06-17", "", "2006-06-03T10:14", "2006-06-10T10:32", "2006-06-17", "2006-06-17"],
+                "SESTDTC": ["2006-06-01", "2006-06-03T10:32", "2006-06-10T09:47", "2006-06-17", "2006-06-01", "2006-06-03T10:14", "2006-06-10T10:32", "2006-06-17"],
             }
         )
         self.assertTrue(
-            DataframeType({"value": df}).non_empty_within_except_last_row({"target": "valid", "comparator": "USUBJID"})
+            DataframeType({"value": valid_df}).non_empty_within_except_last_row({"target": "SEENDTC", "ordering": "SESTDTC", "comparator": "USUBJID"})
         )
         self.assertFalse(
-            DataframeType({"value": df}).non_empty_within_except_last_row({"target": "invalid", "comparator": "USUBJID"})
+            DataframeType({"value": invalid_df}).non_empty_within_except_last_row({"target": "SEENDTC", "ordering": "SESTDTC", "comparator": "USUBJID"})
         )
 
     def test_is_valid_reference(self):

@@ -801,8 +801,10 @@ class DataframeType(BaseType):
     def empty_within_except_last_row(self, other_value: dict):
         target = self.replace_prefix(other_value.get("target"))
         comparator = other_value.get("comparator")
+        order_by_column: str = self.replace_prefix(other_value.get("ordering"))
         # group all targets by comparator
-        grouped_target = self.value.groupby(comparator)[target]
+        ordered_df = self.value.sort_values(by=[comparator, order_by_column])
+        grouped_target = ordered_df.groupby(comparator)[target]
         # validate all targets except the last one
         results = grouped_target.apply(lambda x: x[:-1]).apply(lambda x: x in ["", None])
         # extract values with corresponding indexes from results
@@ -817,8 +819,10 @@ class DataframeType(BaseType):
     def non_empty_within_except_last_row(self, other_value: dict):
         target = self.replace_prefix(other_value.get("target"))
         comparator = other_value.get("comparator")
+        order_by_column: str = self.replace_prefix(other_value.get("ordering"))
         # group all targets by comparator
-        grouped_target = self.value.groupby(comparator)[target]
+        ordered_df = self.value.sort_values(by=[comparator, order_by_column])
+        grouped_target = ordered_df.groupby(comparator)[target]
         # validate all targets except the last one
         results = ~grouped_target.apply(lambda x: x[:-1]).apply(lambda x: x in ["", None])
         # extract values with corresponding indexes from results
