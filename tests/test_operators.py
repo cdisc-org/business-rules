@@ -1071,11 +1071,13 @@ class DataframeOperatorTests(TestCase):
                 "SESTDTC": ["2006-06-01", "2006-06-03T10:32", "2006-06-10T09:47", "2006-06-17", "2006-06-01", "2006-06-03T10:14", "2006-06-10T10:32", "2006-06-17"],
             }
         )
-        self.assertFalse(
-            DataframeType({"value": valid_df}).empty_within_except_last_row({"target": "SEENDTC", "ordering": "SESTDTC", "comparator": "USUBJID"})
+        self.assertTrue(
+            DataframeType({"value": valid_df}).empty_within_except_last_row(
+            {"target": "SEENDTC", "ordering": "SESTDTC", "comparator": "USUBJID"}).equals(pandas.Series({0: False, 1: False, 2: False, 4: False, 5: False, 6: False}))
         )
         self.assertTrue(
-            DataframeType({"value": invalid_df}).empty_within_except_last_row({"target": "SEENDTC", "ordering": "SESTDTC", "comparator": "USUBJID"})
+            DataframeType({"value": invalid_df}).empty_within_except_last_row(
+            {"target": "SEENDTC", "ordering": "SESTDTC", "comparator": "USUBJID"}).equals(pandas.Series({0: True, 1: False, 2: False, 4: False, 5: False, 6: False}))
         )
         
     def test_non_empty_within_except_last_row(self):
@@ -1096,10 +1098,12 @@ class DataframeOperatorTests(TestCase):
             }
         )
         self.assertTrue(
-            DataframeType({"value": valid_df}).non_empty_within_except_last_row({"target": "SEENDTC", "ordering": "SESTDTC", "comparator": "USUBJID"})
+            DataframeType({"value": valid_df}).non_empty_within_except_last_row(
+            {"target": "SEENDTC", "ordering": "SESTDTC", "comparator": "USUBJID"}).equals(pandas.Series({0: True, 1: True, 2: True, 4: True, 5: True, 6: True}))
         )
-        self.assertFalse(
-            DataframeType({"value": invalid_df}).non_empty_within_except_last_row({"target": "SEENDTC", "ordering": "SESTDTC", "comparator": "USUBJID"})
+        self.assertTrue(
+            DataframeType({"value": invalid_df}).non_empty_within_except_last_row(
+            {"target": "SEENDTC", "ordering": "SESTDTC", "comparator": "USUBJID"}).equals(pandas.Series({0: False, 1: True, 2: True, 4: True, 5: True, 6: True}))
         )
 
     def test_is_valid_reference(self):

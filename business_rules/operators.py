@@ -807,9 +807,8 @@ class DataframeType(BaseType):
         grouped_target = ordered_df.groupby(comparator)[target]
         # validate all targets except the last one
         results = grouped_target.apply(lambda x: x[:-1]).apply(lambda x: x in ["", None])
-        # extract values with corresponding indexes from results
-        self.value[f"result_{uuid4()}"] = results.reset_index(level=0, drop=True)
-        return True in results.values
+        # return values with corresponding indexes from results
+        return pd.Series(results.reset_index(level=0, drop=True))
 
     @type_operator(FIELD_DATAFRAME)
     def non_empty(self, other_value: dict):
@@ -825,9 +824,8 @@ class DataframeType(BaseType):
         grouped_target = ordered_df.groupby(comparator)[target]
         # validate all targets except the last one
         results = ~grouped_target.apply(lambda x: x[:-1]).apply(lambda x: x in ["", None])
-        # extract values with corresponding indexes from results
-        self.value[f"result_{uuid4()}"] = results.reset_index(level=0, drop=True)
-        return not(False in results.values)
+        # return values with corresponding indexes from results
+        return pd.Series(results.reset_index(level=0, drop=True))
 
     @type_operator(FIELD_DATAFRAME)
     def contains_all(self, other_value: dict):
