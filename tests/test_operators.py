@@ -1055,6 +1055,13 @@ class DataframeOperatorTests(TestCase):
         )
 
     def test_empty_within_except_last_row(self):
+        df = pandas.DataFrame.from_dict(
+            {
+                "USUBJID": [1, 1, 1, 2, 2, 2],
+                "valid": ["2020-10-10", "2020-10-10", "2020-10-10", "2021", "2021", "2021", ],
+                "invalid": ["2020-10-10", None, None, "2020", "2020", None, ],
+            }
+        )
         valid_df = pandas.DataFrame.from_dict(
             {
                 "USUBJID": [789, 789, 789, 789, 790, 790, 790, 790, ],
@@ -1070,6 +1077,14 @@ class DataframeOperatorTests(TestCase):
                 "SEENDTC": ["", "2006-06-10T09:47", "2006-06-17", "", "2006-06-03T10:14", "2006-06-10T10:32", "2006-06-17", "2006-06-17"],
                 "SESTDTC": ["2006-06-01", "2006-06-03T10:32", "2006-06-10T09:47", "2006-06-17", "2006-06-01", "2006-06-03T10:14", "2006-06-10T10:32", "2006-06-17"],
             }
+        )
+        self.assertFalse(
+            DataframeType({"value": df}).empty_within_except_last_row(
+                {"target": "valid", "comparator": "USUBJID"}).equals(pandas.Series({0: True, 1: True, 3: True, 4: True}))
+        )
+        self.assertTrue(
+            DataframeType({"value": df}).empty_within_except_last_row(
+                {"target": "invalid", "comparator": "USUBJID"}).equals(pandas.Series({0: False, 1: True, 3: False, 4: False}))
         )
         self.assertTrue(
             DataframeType({"value": valid_df}).empty_within_except_last_row(
@@ -1081,6 +1096,13 @@ class DataframeOperatorTests(TestCase):
         )
         
     def test_non_empty_within_except_last_row(self):
+        df = pandas.DataFrame.from_dict(
+            {
+                "USUBJID": [1, 1, 1, 2, 2, 2],
+                "valid": ["2020-10-10", "2020-10-10", "2020-10-10", "2021", "2021", "2021", ],
+                "invalid": ["2020-10-10", None, None, "2020", "2020", None, ],
+            }
+        )       
         valid_df = pandas.DataFrame.from_dict(
             {
                 "USUBJID": [789, 789, 789, 789, 790, 790, 790, 790, ],
@@ -1096,6 +1118,14 @@ class DataframeOperatorTests(TestCase):
                 "SEENDTC": ["", "2006-06-10T09:47", "2006-06-17", "", "2006-06-03T10:14", "2006-06-10T10:32", "2006-06-17", "2006-06-17"],
                 "SESTDTC": ["2006-06-01", "2006-06-03T10:32", "2006-06-10T09:47", "2006-06-17", "2006-06-01", "2006-06-03T10:14", "2006-06-10T10:32", "2006-06-17"],
             }
+        )
+        self.assertTrue(
+            DataframeType({"value": df}).non_empty_within_except_last_row(
+            {"target": "valid", "comparator": "USUBJID"}).equals(pandas.Series({0: True, 1: True, 3: True, 4: True}))
+        )
+        self.assertFalse(
+            DataframeType({"value": df}).non_empty_within_except_last_row(
+            {"target": "invalid", "comparator": "USUBJID"}).equals(pandas.Series({0: False, 1: True, 3: False, 4: False}))
         )
         self.assertTrue(
             DataframeType({"value": valid_df}).non_empty_within_except_last_row(

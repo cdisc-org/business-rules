@@ -803,7 +803,10 @@ class DataframeType(BaseType):
         comparator = other_value.get("comparator")
         order_by_column: str = self.replace_prefix(other_value.get("ordering"))
         # group all targets by comparator
-        ordered_df = self.value.sort_values(by=[comparator, order_by_column])
+        if order_by_column:
+            ordered_df = self.value.sort_values(by=[comparator, order_by_column])
+        else:
+            ordered_df = self.value.sort_values(by=[comparator])
         grouped_target = ordered_df.groupby(comparator)[target]
         # validate all targets except the last one
         results = grouped_target.apply(lambda x: x[:-1]).apply(lambda x: x in ["", None])
@@ -820,7 +823,10 @@ class DataframeType(BaseType):
         comparator = other_value.get("comparator")
         order_by_column: str = self.replace_prefix(other_value.get("ordering"))
         # group all targets by comparator
-        ordered_df = self.value.sort_values(by=[comparator, order_by_column])
+        if order_by_column:
+            ordered_df = self.value.sort_values(by=[comparator, order_by_column])
+        else:
+            ordered_df = self.value.sort_values(by=[comparator])
         grouped_target = ordered_df.groupby(comparator)[target]
         # validate all targets except the last one
         results = ~grouped_target.apply(lambda x: x[:-1]).apply(lambda x: x in ["", None])
