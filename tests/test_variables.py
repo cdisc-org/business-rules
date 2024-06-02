@@ -5,9 +5,7 @@ from business_rules.variables import (rule_variable,
                                       string_rule_variable,
                                       boolean_rule_variable,
                                       select_rule_variable,
-                                      select_multiple_rule_variable,
-                                      generic_rule_variable,
-                                      dataframe_rule_variable)
+                                      select_multiple_rule_variable)
 
 from business_rules.operators import (DataframeType, NumericType,
                         StringType,
@@ -129,19 +127,3 @@ class RuleVariableTests(TestCase):
         self.assertTrue(getattr(select_multiple_var, 'is_rule_variable'))
         self.assertEqual(getattr(select_multiple_var, 'field_type'), SelectMultipleType)
         self.assertEqual(getattr(select_multiple_var, 'options'), options)
-
-    def test_generic_rule_variable(self):
-
-        @generic_rule_variable()
-        def get_var(): pass
-
-        self.assertTrue(getattr(get_var, 'is_rule_variable'))
-        self.assertEqual(getattr(get_var, 'field_type'), GenericType)
-
-    def test_dataframe_rule_variable(self):
-
-        @dataframe_rule_variable()
-        def get_var(): pass
-
-        self.assertTrue(getattr(get_var, 'is_rule_variable'))
-        self.assertEqual(getattr(get_var, 'field_type'), DataframeType)
