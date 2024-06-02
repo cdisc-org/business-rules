@@ -7,12 +7,11 @@ from business_rules.variables import (rule_variable,
                                       select_rule_variable,
                                       select_multiple_rule_variable)
 
-from business_rules.operators import (DataframeType, NumericType,
+from business_rules.operators import (NumericType,
                         StringType,
                         BooleanType,
                         SelectType,
-                        SelectMultipleType,
-                        GenericType)
+                        SelectMultipleType)
 
 class RuleVariableTests(TestCase):
     """ Tests for the base rule_variable decorator.

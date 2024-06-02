@@ -1,8 +1,8 @@
 import pandas as pd
 
-from business_rules.operators import (DataframeType, StringType,
+from business_rules.operators import (StringType,
                                       NumericType, BooleanType, SelectType,
-                                      SelectMultipleType, GenericType)
+                                      SelectMultipleType)
 
 from . import TestCase
 from decimal import Decimal
