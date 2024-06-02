@@ -6,10 +6,7 @@ from .operators import (BaseType,
                         StringType,
                         BooleanType,
                         SelectType,
-                        SelectMultipleType,
-                        GenericType,
-                        DataframeType)
-
+                        SelectMultipleType)
 class BaseVariables(object):
     """ Classes that hold a collection of variables to use with the rules
     engine should inherit from this.
@@ -61,9 +58,3 @@ def select_rule_variable(label=None, options=None):
 
 def select_multiple_rule_variable(label=None, options=None):
     return rule_variable(SelectMultipleType, label=label, options=options)
-
-def generic_rule_variable(label=None, options=None):
-    return rule_variable(GenericType, label=label, options=options)
-
-def dataframe_rule_variable(label=None, options=None):
-    return rule_variable(DataframeType, label=label, options=options)
