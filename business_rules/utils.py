@@ -60,6 +60,10 @@ def is_valid_date(date_string: str) -> bool:
             return False
     return date_regex.match(date_string) is not None
 
+def is_valid_duration(duration: str) -> bool:
+    pattern = r'^P(?!$)(\d+Y)?(\d+M)?(\d+W)?(\d+D)?(T(?=\d)(\d+H)?(\d+M)?(\d+(\.\d+)?S)?)?$'
+    return bool(re.match(pattern, duration))
+
 def get_year(date_string: str):
     timestamp = get_date(date_string)
     return timestamp.year
@@ -162,7 +166,8 @@ def flatten_list(data, l):
 vectorized_apply_regex = np.vectorize(apply_regex)
 vectorized_is_complete_date = np.vectorize(is_complete_date)
 vectorized_compare_dates = np.vectorize(compare_dates)
-vectorized_is_valid = np.vectorize(is_valid_date)
+vectorized_is_valid = np.vectorize(is_valid_date
+vectorized_is_valid_duration = np.vectorize(is_valid_duration)
 vectorized_get_dict_key = np.vectorize(get_dict_key_val)
 vectorized_is_in = np.vectorize(is_in)
 vectorized_case_insensitive_is_in = np.vectorize(case_insensitive_is_in)
