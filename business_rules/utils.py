@@ -61,7 +61,7 @@ def is_valid_date(date_string: str) -> bool:
     return date_regex.match(date_string) is not None
 
 def is_valid_duration(duration: str) -> bool:
-    pattern = r'^P(?!$)(\d+Y)?(\d+M)?(\d+W)?(\d+D)?(T(?=\d)(\d+H)?(\d+M)?(\d+(\.\d+)?S)?)?$'
+    pattern = r'^P(?!\s)(?!$)(\d+Y)?(\d+M)?(\d+W)?(\d+D)?(T(?=\d)(\d+H)?(\d+M)?(\d+(\.\d+)?S)?)?$'
     return bool(re.match(pattern, duration))
 
 def get_year(date_string: str):
