@@ -48,7 +48,7 @@ def float_to_decimal(f):
     return result
 
 def is_valid_date(date_string: str) -> bool:
-     if date_string is None:
+    if date_string is None:
         return False
     try:
         isoparse(date_string)
