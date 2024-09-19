@@ -62,9 +62,31 @@ def is_valid_date(date_string: str) -> bool:
             return False
     return date_regex.match(date_string) is not None
 
-def is_valid_duration(duration: str) -> bool:
-    pattern = r'^P(?!\s)(?!$)(\d+Y)?(\d+M)?(\d+W)?(\d+D)?(T(?=\d)(\d+H)?(\d+M)?(\d+(\.\d+)?S)?)?$'
-    return bool(re.match(pattern, duration))
+def is_valid_duration(duration: str, negative) -> bool:
+    if negative:
+        pattern = r'^[-]?P(?!$)(?:(?:(\d+(?:[.,]\d*)?Y)?[,]?(\d+(?:[.,]\d*)?M)?[,]?(\d+(?:[.,]\d*)?D)?[,]?(T(?=\d)(?:(\d+(?:[.,]\d*)?H)?[,]?(\d+(?:[.,]\d*)?M)?[,]?(\d+(?:[.,]\d*)?S)?)?)?)|(\d+(?:[.,]\d*)?W))$'
+    else:
+        pattern = r'^P(?!$)(?:(?:(\d+(?:[.,]\d*)?Y)?[,]?(\d+(?:[.,]\d*)?M)?[,]?(\d+(?:[.,]\d*)?D)?[,]?(T(?=\d)(?:(\d+(?:[.,]\d*)?H)?[,]?(\d+(?:[.,]\d*)?M)?[,]?(\d+(?:[.,]\d*)?S)?)?)?)|(\d+(?:[.,]\d*)?W))$'
+    match = re.match(pattern, duration)
+    if not match:
+        return False
+
+    years, months, days, time_designator, hours, minutes, seconds, weeks = match.groups()
+
+    if time_designator and not any([hours, minutes, seconds]):
+        return False
+
+    components = [c for c in [years, months, weeks, days, hours, minutes, seconds] if c is not None]
+
+    # Check if decimal is only in the smallest unit
+    decimal_found = False
+    for i, component in enumerate(components):
+        if '.' in component or ',' in component:
+            if decimal_found or i != len(components) - 1:
+                return False
+            decimal_found = True
+
+    return True
 
 def get_year(date_string: str):
     timestamp = get_date(date_string)
