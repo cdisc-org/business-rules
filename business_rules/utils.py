@@ -63,6 +63,8 @@ def is_valid_date(date_string: str) -> bool:
     return date_regex.match(date_string) is not None
 
 def is_valid_duration(duration: str, negative) -> bool:
+    if not isinstance(duration, str):
+        duration = str(duration)
     if negative:
         pattern = r'^[-]?P(?!$)(?:(?:(\d+(?:[.,]\d*)?Y)?[,]?(\d+(?:[.,]\d*)?M)?[,]?(\d+(?:[.,]\d*)?D)?[,]?(T(?=\d)(?:(\d+(?:[.,]\d*)?H)?[,]?(\d+(?:[.,]\d*)?M)?[,]?(\d+(?:[.,]\d*)?S)?)?)?)|(\d+(?:[.,]\d*)?W))$'
     else:
