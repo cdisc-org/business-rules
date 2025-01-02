@@ -15,6 +15,6 @@ setuptools.setup(
         description='{0}\n\n{1}'.format(description, history),
         author='cdisc-org',
         url='https://github.com/cdisc-org/business-rules',
-        packages=['business_rules_enhanced'],
+        packages=['business_rules'],
         license='MIT'
 )
