@@ -161,6 +161,8 @@ def get_dict_key_val(dict_to_get: dict, key):
     return dict_to_get.get(key)
 
 def is_in(value, values):
+    if values is None:
+        return False
     return value in values
 
 def case_insensitive_is_in(value, values):
