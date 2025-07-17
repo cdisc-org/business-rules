@@ -1,4 +1,4 @@
-__version__ = "1.4.7"
+__version__ = "1.4.8"
 
 from .engine import run_all
 from .utils import export_rule_data

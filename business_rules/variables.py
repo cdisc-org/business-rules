@@ -1,14 +1,6 @@
 import inspect
-from functools import wraps
 from .utils import fn_name_to_pretty_label
-from .operators import (BaseType,
-                        NumericType,
-                        StringType,
-                        BooleanType,
-                        SelectType,
-                        SelectMultipleType,
-                        GenericType,
-                        DataframeType)
+from .operators import BaseType
 
 class BaseVariables(object):
     """ Classes that hold a collection of variables to use with the rules
@@ -39,28 +31,6 @@ def rule_variable(field_type, label=None, options=None):
         func.options = options
         return func
     return wrapper
-
-
-def _rule_variable_wrapper(field_type, label):
-    if callable(label):
-        # Decorator is being called with no args, label is actually the decorated func
-        return rule_variable(field_type)(label)
-    return rule_variable(field_type, label=label)
-
-def numeric_rule_variable(label=None):
-    return _rule_variable_wrapper(NumericType, label)
-
-def string_rule_variable(label=None):
-    return _rule_variable_wrapper(StringType, label)
-
-def boolean_rule_variable(label=None):
-    return _rule_variable_wrapper(BooleanType, label)
-
-def select_rule_variable(label=None, options=None):
-    return rule_variable(SelectType, label=label, options=options)
-
-def select_multiple_rule_variable(label=None, options=None):
-    return rule_variable(SelectMultipleType, label=label, options=options)
 
 def generic_rule_variable(label=None, options=None):
     return rule_variable(GenericType, label=label, options=options)
